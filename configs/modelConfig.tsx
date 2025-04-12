@@ -1,14 +1,14 @@
 export const AI_MODELS = {
-    DEEPSEEK: 'deepseek/deepseek-chat-v3-0324:free',
+    QWQ: 'qwen/qwen2.5-vl-3b-instruct:free',
     ALLEN: 'allenai/molmo-7b-d:free',
-    GEMINI: 'google/gemini-2.0-pro-exp-02-05:free',
+    GEMINI: 'qwen/qwen2.5-vl-32b-instruct:free',
 } as const;
 
 export const MODEL_DETAILS = [
     {
-        id: 'deepseek',
-        name: 'Deepseek V3',
-        model: AI_MODELS.DEEPSEEK,
+        id: 'qwen',
+        name: 'Qwen',
+        model: AI_MODELS.QWQ,
         icon: '/deepseek.png',
         description: 'Most advanced model for code generation and UI analysis',
         badge: 'Recommended'
