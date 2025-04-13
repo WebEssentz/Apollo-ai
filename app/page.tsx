@@ -1,20 +1,19 @@
-"use client"
+"use client";
 import Image from "next/image";
 import Link from "next/link";
 import Authentication from "./_components/Authentication";
 import { Button } from "@/components/ui/button";
 import { auth } from "@/configs/firebaseConfig";
-import ProfileAvatar from "./_components/ProfileAvatar";
 import { useAuthContext } from "./provider";
 
 export default function Home() {
-  // const user = auth?.currentUser;
-  // console.log(user)
   const user = useAuthContext();
-  console.log(user?.user)
+  console.log(user?.user);
   return (
-    <div className="min-h-screen-patched bg-background flex w-full">      <main className="min-h-screen-patched relative flex-1">
+    <div className="min-h-screen-patched bg-background flex w-full">
+      <main className="min-h-screen-patched relative flex-1">
         <div className="flex min-h-screen flex-col items-center justify-center">
+          {/* Header */}
           <header className="fixed left-0 top-0 z-50 w-full bg-background">
             <div className="mx-auto w-full px-4 sm:px-6 lg:px-8">
               <nav className="flex h-14 items-center justify-between">
@@ -77,7 +76,9 @@ export default function Home() {
                 <h1 className="font-heading text-pretty text-center text-[29px] font-semibold tracking-tighter text-gray-900 sm:text-[32px] md:text-[46px] dark:text-neutral-200">
                   What can I help you with?
                 </h1>
-              </div>              
+              </div>
+
+              {/* Textarea section */}
               <div className="mt-2 w-full max-w-3xl px-4">
                 <div className="group/form-container content-center relative mx-auto w-full max-w-[49rem]">
                   <div id="prompt-actions"></div>
@@ -138,7 +139,7 @@ export default function Home() {
               </div>
 
               <div className="mt-8 gap-3 flex justify-center">
-                {user?.user?.email ?
+                {user?.user?.email ? 
                   <a className="inline-flex justify-center items-center 
       gap-x-3 text-center bg-gradient-to-tl from-blue-600
        to-violet-600 hover:from-violet-600 hover:to-blue-600 border border-transparent text-white text-sm font-medium rounded-md focus:outline-none focus:ring-1 focus:ring-gray-600 py-3 px-4 dark:focus:ring-offset-gray-800"
@@ -214,7 +215,7 @@ export default function Home() {
           {/* Image Section */}
           <div className="w-full">
             <Image
-              src={'/Wireframetocode.png'}
+              src="/Wireframetocode.png"
               alt="image"
               width={800}
               height={900}
