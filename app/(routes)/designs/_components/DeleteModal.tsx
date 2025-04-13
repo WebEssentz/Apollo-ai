@@ -21,14 +21,13 @@ function DeleteModal({
 }: DeleteModalProps) {
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className={cn(
-                "max-w-[400px] gap-6",
+            <DialogContent className={cn(                "max-w-[400px] gap-6",
                 "data-[state=open]:animate-in data-[state=closed]:animate-out",
                 "data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0",
                 "data-[state=open]:zoom-in-95 data-[state=closed]:zoom-out-95",
                 "data-[state=open]:slide-in-from-left-1/2 data-[state=closed]:slide-out-to-left-1/2",
                 "data-[state=open]:slide-in-from-top-[48%] data-[state=closed]:slide-out-to-top-[48%]",
-                "border border-border/50 bg-background/95",
+                "border border-neutral-800 bg-neutral-900/95",
                 "backdrop-blur-sm"
             )}>
                 <DialogHeader className="flex flex-col items-center gap-3 pt-2">

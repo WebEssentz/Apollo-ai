@@ -4,28 +4,11 @@ import { desc, eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
-    const { description, imageUrl, base64Image, model, uid, email } = await req.json();
+    const { description, imageUrl, model, uid, email } = await req.json();
 
     const creditResult = await db.select().from(usersTable)
-        .where(eq(usersTable.email, email));
-
-    if (creditResult[0]?.credits && creditResult[0]?.credits > 0) {
+        .where(eq(usersTable.email, email));    if (creditResult[0]?.credits && creditResult[0]?.credits > 0) {
         try {
-            // Process with AI first
-            const aiResponse = await fetch(`${req.nextUrl.origin}/api/ai-process`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ model, description, base64Image }),
-            });
-
-            if (!aiResponse.ok) {
-                const errorData = await aiResponse.text();
-                console.error('AI processing failed:', errorData);
-                return NextResponse.json({ 'error': 'AI processing failed', details: errorData }, { status: 500 });
-            }
-
             // Save to database first
             const result = await db.insert(WireframeToCodeTable).values({
                 uid: uid.toString(),

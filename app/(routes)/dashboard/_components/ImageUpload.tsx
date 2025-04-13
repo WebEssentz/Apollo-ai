@@ -50,28 +50,45 @@ function ImageUpload() {
             setPreviewUrl(URL.createObjectURL(selectedFile));
             setBase64Image(await convertToBase64(selectedFile));
         }
-    };
-
-    const OnConverToCodeButtonClick = async () => {
-        if (!file || !model || !description || !base64Image) {
+    }; const OnConverToCodeButtonClick = async () => {
+        if (!file || !model || !description) {
             toast("Please fill in all fields");
             return;
         }
         setLoading(true);
-        
+
         try {
+            const uid = uuid4();
+
+            // First process with AI using FormData
+            const formData = new FormData();
+            formData.append('image', file);
+            formData.append('model', model);
+            formData.append('description', description);
+
+            // Process with AI first
+            const aiResponse = await axios.post('/api/ai-process', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            if (aiResponse.data?.error) {
+                toast('Error processing with AI: ' + aiResponse.data.error);
+                return;
+            }
+
+            // Then upload to Firebase
             const fileName = Date.now() + '.png';
             const imageRef = ref(storage, "Wireframe_To_Code/" + fileName);
             await uploadBytes(imageRef, file);
             const imageUrl = await getDownloadURL(imageRef);
 
-            const uid = uuid4();
-            // First save to database and validate credits
+            // Finally save to database and validate credits
             const dbResult = await axios.post('/api/wireframe-to-code', {
                 uid,
                 description,
                 imageUrl,
-                base64Image,
                 model,
                 email: user?.email
             });
@@ -81,22 +98,9 @@ function ImageUpload() {
                     toast('Not Enough Credits!');
                 } else {
                     toast(dbResult.data.error || 'Error processing image');
-                }
-                return;
+                } return;
             }
 
-            // Then process with AI
-            const aiResponse = await axios.post('/api/ai-process', {
-                model,
-                description,
-                base64Image
-            });
-
-            if (aiResponse.data?.error) {
-                toast('Error processing with AI: ' + aiResponse.data.error);
-                return;
-            }
-            
             router.push('/view-code/' + uid);
         } catch (error) {
             console.error('Error processing image:', error);
@@ -115,9 +119,9 @@ function ImageUpload() {
                 flex flex-col items-center justify-center
                 '>
                     <CloudUpload className='h-10 w-10 text-primary' />
-                    <h2 className='font-bold text-lg'>Upload Image</h2>
+                    <h2 className='font-bold text-lg text-neutral-100'>Upload Image</h2>
 
-                    <p className='text-gray-400 mt-2'>Click Button Select Wireframe Image </p>
+                    <p className='text-neutral-400 mt-2'>Click Button Select Wireframe Image </p>
                     <div className='p-5 border border-dashed w-full flex mt-4 justify-center'>
                         <label htmlFor='imageSelect'>
                             <h2 className='p-2 bg-blue-100 font-bold text-primary  rounded-md px-5'>Select Image</h2>
@@ -130,20 +134,17 @@ function ImageUpload() {
                         onChange={OnImageSelect}
                     />
 
-                </div> :
-                    <div className='p-5 border border-dashed'>
-                        <Image src={previewUrl} alt='preview' width={500} height={500}
-                            className='w-full h-[250px] object-contain'
-                        />
-                        <X className='flex ite justify-end w-full cursor-pointer'
-                            onClick={() => setPreviewUrl(null)}
-                        />
+                </div> : <div className='p-5 border border-dashed border-neutral-800 bg-neutral-900'>                        <Image src={previewUrl} alt='preview' width={500} height={500} priority
+                    className='w-full h-[250px] object-contain bg-neutral-800'
+                />
+                    <X className='flex ite justify-end w-full cursor-pointer'
+                        onClick={() => setPreviewUrl(null)}
+                    />
 
-                    </div>
+                </div>
                 }
-                <div className='p-7 border shadow-md rounded-lg'>
-
-                    <h2 className='font-bold text-lg'>Select AI Model</h2>
+                <div className='p-7 border border-neutral-800 shadow-md rounded-lg bg-neutral-900'>
+                    <h2 className='font-bold text-lg text-neutral-100'>Select AI Model</h2>
                     <Select onValueChange={(value) => setModel(MODEL_DETAILS.find(m => m.name === value)?.model)}>
                         <SelectTrigger className="w-full">
                             <SelectValue placeholder="Select AI Model" />
@@ -160,7 +161,7 @@ function ImageUpload() {
                         </SelectContent>
                     </Select>
 
-                    <h2 className='font-bold text-lg mt-7'>Enter Description about your webpage</h2>
+                    <h2 className='font-bold text-lg mt-7 text-neutral-100'>Enter Description about your webpage</h2>
                     <Textarea
                         onChange={(event) => setDescription(event?.target.value)}
                         className='mt-3 h-[150px]'

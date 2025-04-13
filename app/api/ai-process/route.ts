@@ -14,11 +14,18 @@ export const maxDuration = 300;
 
 export async function POST(req: NextRequest) {
     try {
-        const { model, description, base64Image } = await req.json();
+        const formData = await req.formData();
+        const file = formData.get('image') as File;
+        const model = formData.get('model') as string;
+        const description = formData.get('description') as string;
 
-        // Limit base64 image size if needed
+        // Convert File to base64 for AI processing
+        const bytes = await file.arrayBuffer();
+        const base64Image = `data:${file.type};base64,${Buffer.from(bytes).toString('base64')}`;
+
+        // Limit file size
         const maxSizeInBytes = 10 * 1024 * 1024; // 10MB limit
-        if (base64Image.length > maxSizeInBytes) {
+        if (file.size > maxSizeInBytes) {
             throw new Error('Image size too large. Please use an image under 10MB.');
         }
 

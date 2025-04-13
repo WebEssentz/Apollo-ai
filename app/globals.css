@@ -2,26 +2,103 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: Arial, Helvetica, sans-serif;
+@font-face {
+    font-family: Lora;
+    font-style: normal;
+    font-weight: 400 700;
+    font-display: swap;
+    src: url(/fonts/lora-cyrillic-ext.woff2) format("woff2");
+    unicode-range: u+0460-052f,u+1c80-1c8a,u+20b4,u+2de0-2dff,u+a640-a69f,u+fe2e-fe2f;
 }
 
-@layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary: 0 0% 9%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
+@font-face {
+    font-family: Lora;
+    font-style: normal;
+    font-weight: 400 700;
+    font-display: swap;
+    src: url(/fonts/lora-cyrillic.woff2) format("woff2");
+    unicode-range: u+0301,u+0400-045f,u+0490-0491,u+04b0-04b1,u+2116;
+}
+
+@font-face {
+    font-family: Lora;
+    font-style: normal;
+    font-weight: 400 700;
+    font-display: swap;
+    src: url(/fonts/lora-math.woff2) format("woff2");
+    unicode-range: u+0302-0303,u+0305,u+0307-0308,u+0310,u+0312,u+0315,u+031a;
+}
+
+@font-face {
+    font-family: Lora;
+    font-style: normal;
+    font-weight: 400 700;
+    font-display: swap;
+    src: url(/fonts/lora-symbols.woff2) format("woff2");
+    unicode-range: u+0001-000c,u+000e-001f,u+007f-009f;
+}
+
+@font-face {
+    font-family: Lora;
+    font-style: normal;
+    font-weight: 400 700;
+    font-display: swap;
+    src: url(/fonts/lora-vietnamese.woff2) format("woff2");
+    unicode-range: u+0102-0103,u+0110-0111,u+0128-0129,u+0168-0169,u+01a0-01a1,u+01af-01b0;
+}
+
+@font-face {
+    font-family: Lora;
+    font-style: normal;
+    font-weight: 400 700;
+    font-display: swap;
+    src: url(/fonts/lora-latin-ext.woff2) format("woff2");
+    unicode-range: u+0100-02ba,u+02bd-02c5,u+02c7-02cc,u+02ce-02d7,u+02dd-02ff;
+}
+
+@font-face {
+    font-family: Lora;
+    font-style: normal;
+    font-weight: 400 700;
+    font-display: swap;
+    src: url(/fonts/lora-latin.woff2) format("woff2");
+    unicode-range: u+00??,u+0131,u+0152-0153,u+02bb-02bc,u+02c6,u+02da,u+02dc;
+}
+
+@font-face {
+    font-family: 'Lora Fallback';
+    src: local("Times New Roman");
+    ascent-override: 87.33%;
+    descent-override: 23.78%;
+    line-gap-override: 0.00%;
+    size-adjust: 115.20%;
+}
+
+:root {
+    --font-lora: 'Lora', 'Lora Fallback';
+}
+
+body {
+    font-family: var(--font-lora);
+    font-style: normal;
+}
+
+@layer base {  :root {
+    --gray-900: 220 13% 18%;
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 0 0% 14.9%;
+    --accent-foreground: 0 0% 98%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
     --border: 0 0% 89.8%;
@@ -41,6 +118,17 @@ body {
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    --alpha-50: 255 255 255;
+    --alpha-100: 229 229 229;
+    --alpha-200: 212 212 212;
+    --alpha-300: 163 163 163;
+    --alpha-400: 115 115 115;
+    --alpha-500: 82 82 82;
+    --alpha-600: 64 64 64;
+    --alpha-700: 38 38 38;
+    --alpha-800: 23 23 23;
+    --alpha-900: 13 13 13;
+    --background-subtle: 0 0% 98%;
   }
 
   .dark {
@@ -76,18 +164,39 @@ body {
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    --alpha-50: 18 18 18;
+    --alpha-100: 23 23 23;
+    --alpha-200: 38 38 38;
+    --alpha-300: 64 64 64;
+    --alpha-400: 82 82 82;
+    --alpha-500: 115 115 115;
+    --alpha-600: 163 163 163;
+    --alpha-700: 212 212 212;
+    --alpha-800: 229 229 229;
+    --alpha-900: 255 255 255;
+    --background-subtle: 0 0% 7%;
   }
 }
 
 @layer base {
   * {
     @apply border-border;
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--gray-300)) transparent;
+    box-sizing: border-box;
   }
 
   body {
     @apply bg-background text-foreground;
   }
 }
+
+
+.min-h-screen-patched {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
 
 
 @layer base {
@@ -113,3 +222,31 @@ body {
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 }
+
+.__className_40217a {
+    font-family: var(--font-lora);
+    font-style: normal;
+}
+
+.__variable_40217a {
+    --font-lora: var(--font-lora);
+}
+
+.with-logo_root__qhXOU {
+    overflow: visible;
+}
+
+.with-pixel-icon_pixelIcon__9aV_Q {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+}
+
+@media (max-width: 600px) {
+    .with-pixel-icon_pixelIcon__9aV_Q {
+        width: 32px;
+        height: 32px;
+    }
+}
+
+

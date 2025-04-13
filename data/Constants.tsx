@@ -37,24 +37,6 @@ export default {
 - Do not use any third party library
 - Only give react+ tailwindcss code and do not write any text other than code
 `,
-
-    AiModelList: [
-        {
-            name: 'Gemini Google',
-            icon: '/google.png',
-            modelName: 'google/gemini-2.0-flash-001'
-        },
-        {
-            name: 'llama By Meta',
-            icon: '/meta.png',
-            modelName: 'google/gemini-2.0-flash-001'
-        },
-        {
-            name: 'Deepkseek',
-            icon: '/deepseek.png',
-            modelName: 'qwen/qwen-turbo'
-        }
-    ],
     DEPENDANCY: {
 
         "postcss": "^8",
@@ -70,6 +52,8 @@ export default {
         "date-fns": "^4.1.0",
         "react-chartjs-2": "^5.3.0",
         "chart.js": "^4.4.7",
+        "@iconify/react": "^5.2.1",
+        "@iconify/icons-lucide": "^1.2.135",
     },
     FILES: {
         '/App.css': {

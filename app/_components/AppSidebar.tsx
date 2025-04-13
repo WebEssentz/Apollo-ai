@@ -55,10 +55,9 @@ export function AppSidebar() {
                     <SidebarGroupContent>
                         <SidebarMenu className='mt-5'>
                             {items.map((item, index) => (
-                                <a href={item.url} key={index}
-                                    className={`p-2 text-lg flex gap-2 items-center
-                                 hover:bg-gray-100 rounded-lg
-                                 ${path == item.url && 'bg-gray-200'}
+                                <a href={item.url} key={index}                                    className={`p-2 text-lg flex gap-2 items-center
+                                 hover:bg-neutral-800 rounded-lg
+                                 ${path == item.url && 'bg-neutral-900'}
                                  `}>
                                     <item.icon className='h-5 w-5' />
                                     <span>{item.title}</span>

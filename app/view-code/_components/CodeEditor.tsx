@@ -1,12 +1,12 @@
 import React from 'react'
 import { Sandpack, SandpackCodeEditor, SandpackLayout, SandpackProvider } from "@codesandbox/sandpack-react";
 import Constants from '@/data/Constants';
-import { aquaBlue } from "@codesandbox/sandpack-themes";
-function CodeEditor({ codeResp, isReady }: any) {
-    return (
-        <div>
+import { sandpackDark } from "@codesandbox/sandpack-themes";
+
+function CodeEditor({ codeResp, isReady }: any) {    return (
+        <div className="bg-neutral-900 rounded-xl border border-neutral-800">
             {isReady ? <Sandpack template="react"
-                theme={aquaBlue}
+                theme={sandpackDark}
                 options={{
                     externalResources: ["https://cdn.tailwindcss.com"],
                     showNavigator: true,
@@ -24,7 +24,7 @@ function CodeEditor({ codeResp, isReady }: any) {
                 }} />
                 :
                 <SandpackProvider template="react"
-                    theme={aquaBlue}
+                    theme={sandpackDark}
                     files={{
                         "/app.js": {
                             code: `${codeResp}`,

@@ -1,6 +1,6 @@
 export const AI_MODELS = {
     QWQ: 'qwen/qwen2.5-vl-3b-instruct:free',
-    ALLEN: 'allenai/molmo-7b-d:free',
+    ALLEN: 'deepseek/deepseek-r1:free',
     GEMINI: 'qwen/qwen2.5-vl-32b-instruct:free',
 } as const;
 

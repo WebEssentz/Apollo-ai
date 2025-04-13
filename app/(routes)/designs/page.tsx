@@ -9,9 +9,8 @@ import { LayoutGrid, Loader2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 function DesignCardSkeleton() {
-    return (
-        <div className="group relative flex flex-col overflow-hidden rounded-xl border bg-card">
-            <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted animate-pulse" />
+    return (        <div className="group relative flex flex-col overflow-hidden rounded-xl border border-neutral-800 bg-neutral-900">
+            <div className="relative aspect-[16/9] w-full overflow-hidden bg-neutral-800 animate-pulse" />
             <div className="flex flex-1 flex-col p-6">
                 <div className="space-y-2">
                     <Skeleton className="h-4 w-3/4" />
@@ -61,9 +60,9 @@ function Designs() {
     const titleText = designCount === 1 ? "Design" : "Designs";
 
     return (
-        <div className="min-h-screen bg-background px-4 pb-20 pt-8 md:px-6 lg:px-8">
+        <div className="min-h-screen bg-background px-4 pb-20 pt-8 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
             <Toaster />
-            <div className="mx-auto max-w-[2000px]">
+            <div className="mx-auto w-full max-w-[100rem]">
                 {/* Header */}
                 <div className="mb-8 flex items-center justify-between">
                     <div>

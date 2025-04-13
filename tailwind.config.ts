@@ -9,9 +9,26 @@ export default {
 	],
 	theme: {
 		extend: {
+			fontFamily: {
+				sans: ['var(--font-lora)'],
+				lora: ['var(--font-lora)'],
+			},
 			colors: {
 				background: 'hsl(var(--background))',
 				foreground: 'hsl(var(--foreground))',
+				'background-subtle': 'hsl(var(--background-subtle))',
+				alpha: {
+					50: 'rgb(var(--alpha-50) / <alpha-value>)',
+					100: 'rgb(var(--alpha-100) / <alpha-value>)',
+					200: 'rgb(var(--alpha-200) / <alpha-value>)',
+					300: 'rgb(var(--alpha-300) / <alpha-value>)',
+					400: 'rgb(var(--alpha-400) / <alpha-value>)',
+					500: 'rgb(var(--alpha-500) / <alpha-value>)',
+					600: 'rgb(var(--alpha-600) / <alpha-value>)',
+					700: 'rgb(var(--alpha-700) / <alpha-value>)',
+					800: 'rgb(var(--alpha-800) / <alpha-value>)',
+					900: 'rgb(var(--alpha-900) / <alpha-value>)',
+				},
 				card: {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
