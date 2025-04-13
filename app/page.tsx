@@ -85,7 +85,7 @@ export default function Home() {
                   <div className="relative z-10 flex w-full flex-col">
                     <div className="rounded-b-xl peer-has-[.banner]:bg-gray-100">
                       <form className="focus-within:border-alpha-600 bg-background-subtle border-alpha-400 relative rounded-xl border shadow-[0_2px_2px_rgba(0,0,0,0.04),0_8px_8px_-8px_rgba(0,0,0,0.04)] transition-shadow">
-                        <div className="@container/textarea bg-background-subtle relative z-10 grid min-h-[100px] rounded-xl">
+                        <div className="container-textarea bg-background-subtle relative z-10 grid min-h-[100px] rounded-xl">
                           <label className="sr-only" htmlFor="chat-main-textarea">Chat Input</label>
                           <textarea 
                             data-enhancing="false" 
