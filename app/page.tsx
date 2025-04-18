@@ -7,9 +7,11 @@ import { auth } from "@/configs/firebaseConfig";
 import { useAuthContext } from "./provider";
 import { useEffect, useState, useRef } from "react";
 import { useIsMobile } from "../hooks/use-mobile";
+
 export default function Home() {
   const user = useAuthContext();
   const [isScrolled, setIsScrolled] = useState(false);
+  const [hasContent, setHasContent] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const isMobile = useIsMobile();
   
@@ -24,11 +26,12 @@ export default function Home() {
   }, []);
   
   // Auto-resize textarea based on content
-  const handleTextareaInput = () => {
-    const textarea = textareaRef.current;
+  const handleTextareaInput = (e: React.FormEvent<HTMLTextAreaElement>) => {
+    const textarea = e.currentTarget;
     if (textarea) {
       textarea.style.height = 'auto';
       textarea.style.height = `${Math.min(textarea.scrollHeight, 384)}px`;
+      setHasContent(textarea.value.length > 0);
     }
   };
 
@@ -59,12 +62,12 @@ export default function Home() {
 
                 <div className="flex items-center gap-2 pr-2">
                   {!user?.user?.email ? (
-                    <>
-                      <Authentication>
+                    <>                      
+                    <Authentication>
                         <Button
                           size="sm"
                           variant="outline"
-                          className="text-neutral-200 border-neutral-700 hover:bg-neutral-800 font-medium"
+                          className="bg-transparent text-white border border-white/20 rounded-md hover:bg-white/10 font-medium"
                         >
                           Sign In
                         </Button>
@@ -72,7 +75,7 @@ export default function Home() {
                       <Authentication>
                         <Button
                           size="sm"
-                          className="bg-white text-neutral-900 hover:bg-neutral-100 font-medium"
+                          className="bg-white text-neutral-900 hover:bg-neutral-100 font-medium rounded-md"
                         >
                           Sign Up
                         </Button>
@@ -112,11 +115,9 @@ export default function Home() {
                 >
                   <div id="prompt-actions"></div>
                   <div className="relative z-10 flex w-full flex-col">
-                    <div className="rounded-xl">
-                      <form className="relative rounded-xl border border-[#141415] dark:border-[#141415] bg-white dark:bg-[#141415] transition-all duration-300 hover:shadow-md focus-within:border-primary focus-within:ring-1 focus-within:ring-primary/20">                        
+                    <div className="rounded-xl">                      <form className="relative gradient-border-animation bg-white dark:bg-[#141415] transition-all duration-300">                        
                       <div className="relative z-10 grid min-h-[120px] rounded-xl w-full">
-                          <label className="sr-only" htmlFor="chat-main-textarea">Chat Input</label>
-                          <textarea 
+                          <label className="sr-only" htmlFor="chat-main-textarea">Chat Input</label>                          <textarea 
                             ref={textareaRef}
                             onInput={handleTextareaInput}
                             id="chat-main-textarea" 
@@ -137,12 +138,12 @@ export default function Home() {
                           />
                           <div className="absolute bottom-3 right-3">
                             <button 
-                              className={`focus-visible:ring-offset-[#141415] inline-flex shrink-0 cursor-pointer select-none items-center justify-center gap-1.5 whitespace-nowrap text-nowrap border font-medium outline-none ring-blue-600 transition-[background,border-color,color,transform,opacity,box-shadow] focus-visible:ring-2 focus-visible:ring-offset-1 [&>svg]:pointer-events-none [&>svg]:size-4 [&_svg]:shrink-0 px-3 text-sm has-[>kbd]:gap-2 has-[>svg]:px-2 has-[>kbd]:pr-[6px] ml-1 size-7 rounded-md ${
-                                textareaRef.current?.value 
-                                ? 'bg-white border-white hover:bg-gray-100 hover:border-gray-100 focus:bg-gray-100 focus:border-gray-100' 
-                                : 'bg-[#1f1f22] border-[#5d5d64] disabled:pointer-events-none disabled:cursor-not-allowed text-background'
-                              }`}
-                              disabled={!textareaRef.current?.value} 
+                              className={`focus-visible:ring-offset-[#141415] inline-flex shrink-0 cursor-pointer select-none items-center justify-center gap-1.5 whitespace-nowrap text-nowrap border font-medium outline-none ring-blue-600 transition-all duration-300 focus-visible:ring-2 focus-visible:ring-offset-1 [&>svg]:pointer-events-none [&>svg]:size-4 [&_svg]:shrink-0 px-3 text-sm has-[>kbd]:gap-2 has-[>svg]:px-2 has-[>kbd]:pr-[6px] ml-1 size-7 rounded-md 
+                                ${hasContent 
+                                  ? 'bg-white border-white hover:bg-gray-100 hover:border-gray-100 focus:bg-gray-100 focus:border-gray-100 scale-100 opacity-100' 
+                                  : 'bg-[#1f1f22] border-[#5d5d64] opacity-50 scale-95 cursor-not-allowed'
+                                }`}
+                              disabled={!hasContent}
                               data-testid="prompt-form-send-button" 
                               type="submit"
                             >
@@ -152,9 +153,9 @@ export default function Home() {
                                 strokeLinejoin="round" 
                                 viewBox="0 0 16 16" 
                                 width="16" 
-                                style={{ 
-                                  color: textareaRef.current?.value ? '#000000' : '#6b6b74'
-                                }}
+                                className={`transition-colors duration-300 ${
+                                  hasContent ? 'text-black' : 'text-[#6b6b74]'
+                                }`}
                               >
                                 <path fillRule="evenodd" clipRule="evenodd" d="M8.70711 1.39644C8.31659 1.00592 7.68342 1.00592 7.2929 1.39644L2.21968 6.46966L1.68935 6.99999L2.75001 8.06065L3.28034 7.53032L7.25001 3.56065V14.25V15H8.75001V14.25V3.56065L12.7197 7.53032L13.25 8.06065L14.3107 6.99999L13.7803 6.46966L8.70711 1.39644Z" fill="currentColor" />
                               </svg>
