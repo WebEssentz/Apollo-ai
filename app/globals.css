@@ -269,6 +269,54 @@ body {
   filter: drop-shadow(0 0 10px rgba(66, 133, 244, 0.3));
 }
 
+@keyframes sparkle {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.1);
+  }
+}
+
+@keyframes glow {
+  0%,
+  100% {
+    box-shadow: 0 0 5px rgba(147, 51, 234, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(147, 51, 234, 0.8), 0 0 30px rgba(37, 99, 235, 0.6);
+  }
+}
+
+.animate-sparkle {
+  animation: sparkle 0.5s ease-in-out infinite, glow 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.skeleton-text {
+  background: linear-gradient(
+    90deg,
+    rgba(147, 51, 234, 0.2) 25%,
+    rgba(37, 99, 235, 0.2) 50%,
+    rgba(147, 51, 234, 0.2) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+  color: transparent;
+}
+
+
 @layer base {
   :root {
     /* Refined color palette with better contrast and consistency */
