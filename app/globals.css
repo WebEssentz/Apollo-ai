@@ -317,6 +317,141 @@ body {
 }
 
 
+/* Sleek textarea styles */
+textarea#chat-main-textarea {
+  transition: all 0.3s ease;
+  border-radius: 0.75rem;
+  resize: none;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+textarea#chat-main-textarea:focus {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Smooth expansion animation */
+textarea#chat-main-textarea {
+  transition: height 0.2s ease-out;
+}
+
+/* Silver flash animation */
+@keyframes silver-flash {
+  0% {
+    color: #141415;
+    text-shadow: none;
+  }
+  50% {
+    color: #e0e0e0;
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.8), 0 0 12px rgba(192, 219, 255, 0.8);
+  }
+  100% {
+    color: #141415;
+    text-shadow: none;
+  }
+}
+
+.silver-flash {
+  animation: silver-flash 0.3s ease-in-out;
+  display: inline-block;
+}
+
+/* Silver cursor animation */
+@keyframes silver-cursor-blink {
+  0%,
+  100% {
+    opacity: 1;
+    color: #e0e0e0;
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.8), 0 0 12px rgba(192, 219, 255, 0.8);
+  }
+  50% {
+    opacity: 0.5;
+    color: #a0a0a0;
+    text-shadow: 0 0 4px rgba(255, 255, 255, 0.4);
+  }
+}
+
+.silver-cursor {
+  animation: silver-cursor-blink 0.8s infinite;
+  display: inline-block;
+  font-weight: 300;
+  margin-left: 1px;
+}
+
+.silver-typewriter-container {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+
+/* Streamed content formatting */
+.streamed-content {
+  white-space: pre-wrap;
+}
+
+/* Active state gradient for textarea form */
+@keyframes gradient-animation {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.ai-generating {
+  position: relative;
+}
+
+.ai-generating::before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, #3b82f6, #8b5cf6, #ec4899, #3b82f6);
+  background-size: 400% 400%;
+  animation: gradient-animation 3s ease infinite;
+  border-radius: inherit;
+  z-index: -1;
+}
+
+/* Modal animations */
+@keyframes modal-fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes backdrop-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal-animation-enter {
+  animation: modal-fade-in 0.2s ease-out forwards;
+}
+
+.backdrop-animation-enter {
+  animation: backdrop-fade-in 0.2s ease-out forwards;
+}
+
+
 @layer base {
   :root {
     /* Refined color palette with better contrast and consistency */

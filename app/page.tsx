@@ -10,11 +10,13 @@ import { useAuthContext } from "./provider"
 import { useEffect, useState, useRef } from "react"
 import { useIsMobile } from "../hooks/use-mobile"
 import EnhancedButton from "./_components/EnhancedButton"
+import AuthModal from "./_components/AuthModal"
 
 export default function Home() {
   const user = useAuthContext()
   const [isScrolled, setIsScrolled] = useState(false)
   const [hasContent, setHasContent] = useState(false)
+  const [showAuthModal, setShowAuthModal] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const isMobile = useIsMobile()
 
@@ -38,10 +40,18 @@ export default function Home() {
     }
   }
 
+   // Handle key press in textarea
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // Show auth modal when Enter is pressed without Shift
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault()
+      setShowAuthModal(true)
+    }
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle form submission logic here
-    console.log("Submitting prompt:", textareaRef.current?.value)
+    setShowAuthModal(true)
   }
 
   return (
@@ -119,6 +129,7 @@ export default function Home() {
                           <textarea
                             ref={textareaRef}
                             onInput={handleTextareaInput}
+                            onKeyDown={handleKeyDown}
                             id="chat-main-textarea"
                             name="content"
                             placeholder="Ask Apollo to build…"
@@ -136,7 +147,7 @@ export default function Home() {
                             aria-label="Type your request here"
                           />
                           <div className="absolute bottom-3 right-3 flex items-center">
-                            {/* Enhance Button - NEW */}
+                            {/* Enhance Button */}
                             <EnhancedButton textareaRef={textareaRef} hasContent={hasContent} />
 
                             {/* Submit Button */}
@@ -177,6 +188,7 @@ export default function Home() {
                   </div>
                 </div>
               </div>
+
 
               <div className="mt-8 gap-3 flex justify-center">
                 {user?.user?.email ? 
@@ -265,6 +277,8 @@ export default function Home() {
           </div>
         </div>
       </main>
+       {/* Auth Modal */}
+      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
     </div>
   );
 }

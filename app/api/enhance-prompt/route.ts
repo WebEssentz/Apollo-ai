@@ -12,6 +12,11 @@ function validateInput(input: string): { valid: boolean; message?: string } {
     return { valid: false, message: "Input must be at least 10 words." }
   }
 
+  // Check if prompt is too long
+  if (wordCount > 100) {
+    return { valid: false, message: "Input is too long. Please limit to 100 words or less." }
+  }
+
   // Check for vague requests
   const vaguePhrases = ["website", "app", "something", "anything", "help me"]
   const hasSpecificContext = !vaguePhrases.some(
@@ -54,20 +59,19 @@ export async function POST(request: Request) {
     const ai = new GoogleGenAI({ apiKey })
 
     // Use a more reliable model version
-    const modelName = "gemini-2.0-flash" // Using a more stable model
+    const modelName = "gemini-2.5-pro-preview-03-25" // Using a more stable model
 
-    // Create the prompt for Gemini
+    // Create the prompt for Gemini - UPDATED FOR MORE CONCISE OUTPUT
     const geminiPrompt = `
-    Enhance the following prompt to make it more detailed, structured, and specific:
+    Enhance the following prompt to make it more structured and specific, but keep it BRIEF and CONCISE (no more than 5-6 lines total):
     
     "${prompt}"
     
     Your enhanced version should:
-    1. Add specific details and examples
-    2. Organize information in a numbered list
-    3. Clarify any vague terms
-    4. Add relevant considerations
-    5. Use professional language
+    1. Add 3-4 specific points in a numbered list
+    2. Use professional but concise language
+    3. Focus only on the most important aspects
+    4. Avoid unnecessary details or explanations
     
     Return ONLY the enhanced prompt with no explanations or reasoning.
     `
@@ -111,6 +115,14 @@ export async function POST(request: Request) {
       // Clean the response to remove any thinking process
       const cleanedResponse = enhancedPrompt.replace(/^Thinking Process:[\s\S]*?(Result:|Enhanced Prompt:)/i, "").trim()
 
+      // Ensure the response is not too verbose
+      const lines = cleanedResponse.split("\n").filter((line) => line.trim() !== "")
+      if (lines.length > 8) {
+        // If too verbose, truncate to 8 lines
+        const truncatedResponse = lines.slice(0, 8).join("\n")
+        return Response.json({ enhancedPrompt: truncatedResponse })
+      }
+
       return Response.json({ enhancedPrompt: cleanedResponse })
     } catch (apiError) {
       console.error("Gemini API error:", apiError)
@@ -128,47 +140,62 @@ export async function POST(request: Request) {
   }
 }
 
-// Fallback function to enhance prompts without API
+// Fallback function to enhance prompts without API - UPDATED FOR MORE CONCISE OUTPUT
 function manuallyEnhancePrompt(prompt: string): string {
   // Convert to lowercase and capitalize first letter of sentences
   const formattedPrompt = prompt.toLowerCase().replace(/(^\s*\w|[.!?]\s*\w)/g, (c) => c.toUpperCase())
 
-  // Add structure
-  let enhanced = "Create a " + formattedPrompt.trim()
+  // Add structure - more concise
+  let enhanced = formattedPrompt.trim()
 
-  // Add numbered points based on keywords
-  const points = []
+  // Extract main topic
+  const topics = ["website", "app", "dashboard", "stats", "ai", "personal"]
+  const foundTopic = topics.find((topic) => enhanced.includes(topic)) || ""
 
-  if (enhanced.includes("website")) {
-    points.push("Design a responsive user interface that works on mobile and desktop")
-    points.push("Include intuitive navigation and user-friendly layout")
-  }
+  // Create a more concise enhanced prompt
+  if (foundTopic) {
+    enhanced = `Create a ${foundTopic} with the following features:\n\n`
 
-  if (enhanced.includes("stats") || enhanced.includes("statistics")) {
-    points.push("Display key metrics and statistics in an organized dashboard")
-    points.push("Use charts and visualizations to represent data clearly")
-    points.push("Allow for filtering and sorting of statistical information")
-  }
+    // Add 3-4 key points based on the topic
+    const points = []
 
-  if (enhanced.includes("ai") || enhanced.includes("artificial intelligence")) {
-    points.push("Implement AI-powered features for data analysis and insights")
-    points.push("Create personalized recommendations based on user data")
-  }
+    if (foundTopic === "website") {
+      points.push("Responsive design for all devices")
+      points.push("Clean, intuitive user interface")
+      points.push("Fast loading and performance")
+    } else if (foundTopic === "app") {
+      points.push("User-friendly mobile interface")
+      points.push("Core functionality: " + prompt.split(" ").slice(0, 5).join(" "))
+      points.push("Offline capabilities")
+    } else if (foundTopic.includes("stats") || foundTopic.includes("dashboard")) {
+      points.push("Key metrics visualization")
+      points.push("Data filtering options")
+      points.push("Regular data updates")
+    } else if (foundTopic.includes("ai")) {
+      points.push("AI-powered analysis")
+      points.push("Personalized recommendations")
+      points.push("Learning capabilities")
+    } else if (foundTopic.includes("personal")) {
+      points.push("Privacy and security")
+      points.push("Customization options")
+      points.push("Personal data management")
+    }
 
-  if (enhanced.includes("personal")) {
-    points.push("Ensure privacy and security for personal information")
-    points.push("Include customization options to tailor the experience")
-  }
-
-  // Add the points to the enhanced prompt
-  if (points.length > 0) {
-    enhanced += " that includes the following features:\n\n"
+    // Add the points to the enhanced prompt
     points.forEach((point, index) => {
       enhanced += `${index + 1}. ${point}\n`
     })
 
-    // Add a closing request
-    enhanced += "\nPlease provide a design concept, suggested technology stack, and implementation steps."
+    // Add a brief closing
+    enhanced += "\nInclude design and implementation details."
+  } else {
+    // Generic enhancement
+    enhanced = `Develop ${enhanced} with these key features:\n\n`
+    enhanced += "1. User-friendly interface\n"
+    enhanced += "2. Core functionality\n"
+    enhanced += "3. Performance optimization\n"
+
+    enhanced += "\nProvide implementation approach."
   }
 
   return enhanced
