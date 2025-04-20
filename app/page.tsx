@@ -218,7 +218,7 @@ export default function Home() {
                             required={false}
                             disabled={isEnhancing}
                           >
-                            <div className="ml-auto flex items-center gap-1">
+                            <div className="ml-auto flex items-center gap-1 min-h-0 h-8 px-1 pb-1 pt-0.5">
                               <EnhanceButton
                                 textareaRef={textareaRef}
                                 hasContent={hasContent}

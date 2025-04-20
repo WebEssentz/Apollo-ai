@@ -60,7 +60,7 @@ const AnimatedTextArea = forwardRef<HTMLTextAreaElement, AnimatedTextAreaProps>(
     return (
       <div className={`animated-border-textarea-container ${isFocused ? "focused" : ""} ${isAnimatingOut ? "animating-out" : ""}`}>
         <div className="flex flex-col w-full">
-          <textarea          
+          <textarea
             ref={el => {
               textareaRef.current = el;
               if (typeof ref === "function") ref(el);
@@ -82,13 +82,13 @@ const AnimatedTextArea = forwardRef<HTMLTextAreaElement, AnimatedTextAreaProps>(
             className={`animated-border-textarea ${className}`}
             style={{
               resize: "none",
-              minHeight: "42px",
+              minHeight: "32px", // smaller default
               maxHeight: "384px",
-              paddingBottom: "0.375rem" // pb-1.5 in Tailwind
+              paddingBottom: "0.25rem" // tighter
             }}
           />
           {children && (
-            <div className="flex items-center gap-2 p-3">
+            <div className="flex items-center gap-1 justify-end px-1 pb-1 pt-0.5 min-h-0 h-8">
               {children}
             </div>
           )}
