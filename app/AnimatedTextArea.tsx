@@ -70,7 +70,8 @@ const AnimatedTextArea = forwardRef<HTMLDivElement, AnimatedTextAreaProps>(
       }
     };    return (
       <div className={`animated-border-textarea-container ${isFocused ? "focused" : ""} ${isAnimatingOut ? "animating-out" : ""}`}>
-        <div className="flex flex-col w-full">          <SilverTextEditor
+        <div className="flex flex-col w-full">
+          <SilverTextEditor
             ref={editorRef}
             id={id}
             placeholder={placeholder}
@@ -81,13 +82,14 @@ const AnimatedTextArea = forwardRef<HTMLDivElement, AnimatedTextAreaProps>(
             isShimmering={isFocused}
             className={className}
           />
-          {children && (            <div className="flex items-center gap-3 px-4 py-3.5">
+          {children && (
+            <div className="flex items-center gap-3 px-4 py-3">
               <div className="flex gap-3">
                 <div className="shrink-1 min-w-0 grow-0">
                   {/* Project selection or other left-side controls */}
                 </div>
               </div>
-              <div className="ml-auto flex items-center gap-3">
+              <div className="ml-auto flex items-center gap-2 [&>button]:h-9 [&>button]:w-9 [&>span]:h-9 [&>span]:w-9">
                 {children}
               </div>
             </div>
