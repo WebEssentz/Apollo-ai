@@ -28,7 +28,10 @@ export default function EnhancedButton({
   useEffect(() => {
     const checkCharLimit = () => {
       if (!textareaRef.current) return;
-      const text = textareaRef.current.value;
+      // Support both textarea and contenteditable div
+      const text = (textareaRef.current as any).value !== undefined
+        ? (textareaRef.current as any).value || ''
+        : textareaRef.current.textContent || '';
       const charCount = text.length;
       setMeetsCharLimit(charCount >= 100 && charCount <= 1000);
       if (enhancedText !== null) {
@@ -130,49 +133,12 @@ export default function EnhancedButton({
     }
   };
 
-  // Fallback function to enhance prompts without API
-  const fallbackEnhancePrompt = (prompt: string): string => {
-    const formattedPrompt = prompt.toLowerCase().replace(/(^\s*\w|[.!?]\s*\w)/g, (c) => c.toUpperCase());
-    let enhanced = formattedPrompt.trim();
-    const topics = ["website", "app", "dashboard", "stats", "ai", "personal"];
-    const foundTopic = topics.find((topic) => enhanced.includes(topic)) || "";
-    if (foundTopic) {
-      enhanced = `Create a ${foundTopic} with the following features:\n\n`;
-      const points = [];
-      if (foundTopic === "website") {
-        points.push("Responsive design for all devices");
-        points.push("Clean, intuitive user interface");
-        points.push("Fast loading and performance");
-      } else if (foundTopic === "app") {
-        points.push("User-friendly mobile interface");
-        points.push("Core functionality: " + prompt.split(" ").slice(0, 5).join(" "));
-        points.push("Offline capabilities");
-      } else if (foundTopic.includes("stats") || foundTopic.includes("dashboard")) {
-        points.push("Key metrics visualization");
-        points.push("Data filtering options");
-        points.push("Regular data updates");
-      } else if (foundTopic.includes("ai")) {
-        points.push("AI-powered analysis");
-        points.push("Personalized recommendations");
-        points.push("Learning capabilities");
-      } else if (foundTopic.includes("personal")) {
-        points.push("Privacy and security");
-        points.push("Customization options");
-        points.push("Personal data management");
-      }
-      points.forEach((point, index) => {
-        enhanced += `${index + 1}. ${point}\n`;
-      });
-      enhanced += "\nInclude design and implementation details.";
-    } else {
-      enhanced = `Develop ${enhanced} with these key features:\n\n`;
-      enhanced += "1. User-friendly interface\n";
-      enhanced += "2. Core functionality\n";
-      enhanced += "3. Performance optimization\n";
-      enhanced += "\nProvide implementation approach.";
-    }
-    return enhanced;
-  };
+  // Defensive fallback for undefined/null prompt
+  function fallbackEnhancePrompt(prompt: string | undefined | null): string {
+    if (!prompt || typeof prompt !== 'string') return '';
+    // Example fallback: just return the prompt lowercased
+    return prompt.toLowerCase();
+  }
 
   // Main Enhance logic
   const handleEnhance = async () => {
@@ -189,9 +155,11 @@ export default function EnhancedButton({
     // --- Typewriter effect and AI stream logic ---
     silverTypewriterEffect(textarea.value, textarea);
     // End button animation after the enhancement is complete (handled in the typewriter effect)
+    textarea.classList.add("shimmer");
     setTimeout(() => {
       setIsAnimating(false);
       if (buttonRef.current) buttonRef.current.classList.remove("enhance-button-sparkle");
+      textarea.classList.remove("shimmer");
     }, 4000);
   };
 

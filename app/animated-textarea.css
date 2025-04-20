@@ -5,7 +5,21 @@
   background-color: #141415;
   transition: all 0.2s ease;
   border: 1px solid #2a2a2a;
+  min-height: 80px;
+  display: flex;
+  flex-direction: column;
 }
+
+[contenteditable=true]:empty:before {
+  content: attr(data-placeholder);
+  color: rgba(255, 255, 255, 0.5);
+  pointer-events: none;
+  position: absolute;
+  left: 12px;
+  top: 12px;
+}
+
+
 
 /* Silvery shimmer through the TEXT itself (not just background) */
 .silvery-shimmer-text {
@@ -38,10 +52,10 @@
   width: 100%;
   padding: 0.75rem;
   background-color: transparent;
-  color: white;
+  color: #fff;
   border: none;
   border-radius: 0.75rem;
-  resize: vertical;
+  resize: none;
   outline: none;
   font-family: inherit;
   font-size: inherit;
@@ -52,23 +66,31 @@
   padding-bottom: 0.25rem;
   white-space: pre-wrap;
   overflow-y: auto;
+  text-align: left;
+  caret-color: #fff;
 }
 
 .animated-border-textarea::-webkit-scrollbar {
-  width: 6px;
-}
-
-.animated-border-textarea::-webkit-scrollbar-track {
+  width: 8px;
+  height: 8px;
   background: transparent;
 }
 
 .animated-border-textarea::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.2);
-  border-radius: 3px;
+  background: white;
+  border-radius: 6px;
+  min-height: 24px;
+  border: 2px solid #141415;
 }
 
-.animated-border-textarea::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(255, 255, 255, 0.3);
+.animated-border-textarea::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 6px;
+}
+
+.animated-border-textarea {
+  scrollbar-width: thin;
+  scrollbar-color: gray transparent;
 }
 
 .animated-border-textarea-container::before {

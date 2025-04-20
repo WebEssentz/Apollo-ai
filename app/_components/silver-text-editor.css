@@ -1,0 +1,49 @@
+/* Silver Text Editor styles */
+[contenteditable=true]:empty:before {
+  content: attr(data-placeholder);
+  color: rgba(255, 255, 255, 0.5);
+  pointer-events: none;
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  text-align: left;
+  font-size: inherit;
+  font-family: inherit;
+}
+
+[contenteditable=true]:focus {
+  outline: none;
+}
+
+[contenteditable=true] {
+  color: #fff !important;
+  caret-color: #fff !important;
+  text-align: left !important;
+  overflow-x: hidden !important;
+  word-wrap: break-word !important;
+  white-space: pre-wrap !important;
+}
+
+/* Custom scrollbar styling */
+[contenteditable=true]::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+  background: transparent;
+}
+
+[contenteditable=true]::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  min-height: 24px;
+}
+
+[contenteditable=true]::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 6px;
+}
+
+/* Firefox scrollbar */
+[contenteditable=true] {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}

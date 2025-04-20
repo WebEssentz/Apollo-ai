@@ -1,134 +1,106 @@
-"use client"
-import Image from "next/image"
-import type React from "react"
-
-import Link from "next/link"
-import Authentication from "./_components/Authentication"
-import EnhanceButton from "./_components/EnhancedButton"
-import { Button } from "@/components/ui/button"
-import { useAuthContext } from "./provider"
-import { useEffect, useState, useRef } from "react"
-import { useIsMobile } from "../hooks/use-mobile"
-import EnhancedButton from "./_components/EnhancedButton"
-import AuthModal from "./_components/AuthModal"
-import AnimatedTextArea from "./AnimatedTextArea"
+"use client";
+import Image from "next/image";
+import Link from "next/link";
+import Authentication from "./_components/Authentication";
+import EnhancedButton from "./_components/EnhancedButton";
+import { Button } from "@/components/ui/button";
+import { useAuthContext } from "./provider";
+import { useEffect, useState, useRef } from "react";
+import { useIsMobile } from "../hooks/use-mobile";
+import AuthModal from "./_components/AuthModal";
+import AnimatedTextArea from "./AnimatedTextArea";
 
 export default function Home() {
-  const user = useAuthContext()
-  const [isScrolled, setIsScrolled] = useState(false)
-  const [hasContent, setHasContent] = useState(false)
-  const [showAuthModal, setShowAuthModal] = useState(false)
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
-// type: React.RefObject<HTMLTextAreaElement>
-  const isMobile = useIsMobile()
-  const [charCount, setCharCount] = useState(0)
-  const formRef = useRef<HTMLFormElement>(null)
-  const [isEnhancing, setIsEnhancing] = useState(false)
+  const user = useAuthContext();
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [hasContent, setHasContent] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const textareaRef = useRef<HTMLDivElement>(null); // Updated for SilverTextEditor/AnimatedTextArea
+  const isMobile = useIsMobile();
+  const [charCount, setCharCount] = useState(0);
+  const formRef = useRef<HTMLFormElement>(null);
+  const [isEnhancing, setIsEnhancing] = useState(false);
 
-
-  // Handle scroll effect for header
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10)
-    }
+      setIsScrolled(window.scrollY > 10);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
-    window.addEventListener("scroll", handleScroll)
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
-  // Handle focus/blur animation for the form
   useEffect(() => {
-    const form = formRef.current
-    const textarea = textareaRef.current
-
-    if (!form || !textarea) return
-
+    const form = formRef.current;
+    const textarea = textareaRef.current;
+    if (!form || !textarea) return;
     const handleFocus = (e: FocusEvent) => {
-      // Only trigger animation if the textarea itself is focused
       if (e.target === textarea) {
-        form.classList.add("water-rush-in")
-        form.classList.remove("blur-animation")
+        form.classList.add("water-rush-in");
+        form.classList.remove("blur-animation");
       }
-    }
-
+    };
     const handleBlur = (e: FocusEvent) => {
-      // Only trigger animation if we're not focusing another element within the form
       if (e.target === textarea) {
-        form.classList.remove("water-rush-in")
-        form.classList.add("blur-animation")
+        form.classList.remove("water-rush-in");
+        form.classList.add("blur-animation");
         setTimeout(() => {
-          form.classList.remove("blur-animation")
-        }, 3500) // Match the animation duration (3.5 seconds)
+          form.classList.remove("blur-animation");
+        }, 3500);
       }
-    }
-
-    textarea.addEventListener("focus", handleFocus)
-    textarea.addEventListener("blur", handleBlur)
-
+    };
+    textarea.addEventListener("focus", handleFocus as any);
+    textarea.addEventListener("blur", handleBlur as any);
     return () => {
-      textarea.removeEventListener("focus", handleFocus)
-      textarea.removeEventListener("blur", handleBlur)
-    }
-  }, [])
+      textarea.removeEventListener("focus", handleFocus as any);
+      textarea.removeEventListener("blur", handleBlur as any);
+    };
+  }, []);
 
-   // Auto-resize textarea based on content and scroll to bottom
-  const handleTextareaInput = (e: React.FormEvent<HTMLTextAreaElement>) => {
-    const textarea = e.currentTarget
+  // Auto-resize textarea based on content and scroll to bottom
+  const handleTextareaInput = (e: any) => {
+    const textarea = textareaRef.current;
     if (textarea) {
       // Save current scroll position and selection
-      const scrollTop = textarea.scrollTop
-      const selectionStart = textarea.selectionStart
-      const selectionEnd = textarea.selectionEnd
-
+      const scrollTop = textarea.scrollTop;
       // Temporarily reset height to calculate proper scrollHeight
-      textarea.style.height = "auto"
-      
+      (textarea as any).style.height = "auto";
       // Calculate new height with max height limit
-      const maxHeight = 200
-      const newHeight = Math.min(textarea.scrollHeight, maxHeight)
-      textarea.style.height = `${newHeight}px`
-      
+      const maxHeight = 200;
+      const newHeight = Math.min(textarea.scrollHeight, maxHeight);
+      (textarea as any).style.height = `${newHeight}px`;
       // If content exceeds max height, ensure proper scrolling
       if (textarea.scrollHeight > maxHeight) {
-        textarea.style.overflowY = "auto"
-        
+        (textarea as any).style.overflowY = "auto";
         // If cursor is at the end, scroll to bottom
-        if (selectionEnd === textarea.value.length) {
-          textarea.scrollTop = textarea.scrollHeight
+        if ((textarea as any).selectionEnd === (textarea.textContent ? textarea.textContent.length : 0)) {
+          textarea.scrollTop = textarea.scrollHeight;
         } else {
-          // Restore original scroll position
-          textarea.scrollTop = scrollTop
+          textarea.scrollTop = scrollTop;
         }
       } else {
-        textarea.style.overflowY = "hidden"
+        (textarea as any).style.overflowY = "hidden";
       }
-
-      // Restore selection
-      textarea.setSelectionRange(selectionStart, selectionEnd)
-      setHasContent(textarea.value.length > 0)
+      setHasContent((textarea.textContent ? textarea.textContent.length : 0) > 0);
     }
-  }
+  };
 
-   // Handle key press in textarea
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    // Show auth modal when Enter is pressed without Shift
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey && !isEnhancing) {
-      e.preventDefault()
-      setShowAuthModal(true)
+      e.preventDefault();
+      setShowAuthModal(true);
     }
-  }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     if (!isEnhancing) {
-      setShowAuthModal(true)
+      setShowAuthModal(true);
     }
-  }
+  };
 
-  // Handle enhancing state changes from EnhanceButton
   const handleEnhancingStateChange = (enhancingState: boolean) => {
-    setIsEnhancing(enhancingState)
-  }
-
+    setIsEnhancing(enhancingState);
+  };
 
   return (
     <div className="min-h-screen-patched bg-background flex w-full">
@@ -142,7 +114,6 @@ export default function Home() {
                   <Image src={"/logo.svg"} alt="Apollo logo" width={32} height={32} className="w-8 h-8" priority />
                   <span className="font-medium text-lg hidden sm:inline-block">Apollo</span>
                 </Link>
-
                 <div className="flex items-center gap-2 pr-2">
                   {!user?.user?.email ? (
                     <>
@@ -175,7 +146,6 @@ export default function Home() {
               </nav>
             </div>
           </header>
-
           {/* Main Content */}
           <div className="flex-col items-center justify-center gap-6 max-w-[85rem] mx-auto px-4 sm:px-6 lg:px-8 pt-32 sm:pt-48">
             {/* Hero Section */}
@@ -185,43 +155,40 @@ export default function Home() {
                   What can I help you build?
                 </h1>
               </div>
-
               {/* Enhanced Textarea section */}
               <div className="mt-6 w-full max-w-3xl px-4 sm:px-4 md:px-6 @container/textarea">
-                <div
-                  className={`group/form-container content-center relative mx-auto w-full ${isMobile ? "max-w-full px-0" : "max-w-[49rem] px-2 sm:px-0"}`}
-                >
+                <div className={`group/form-container content-center relative mx-auto w-full ${isMobile ? "max-w-full px-0" : "max-w-[49rem] px-2 sm:px-0"}`}>
                   <div id="prompt-actions"></div>
                   <div className="relative z-10 flex w-full flex-col">
                     <div className="rounded-xl">
                       <form
                         onSubmit={handleSubmit}
                         className="relative gradient-border-animation bg-white dark:bg-[#141415] transition-all duration-300"
+                        ref={formRef}
                       >
                         <div className="relative z-10 grid min-h-[120px] rounded-xl w-full">
                           <label className="sr-only" htmlFor="chat-main-textarea">
                             Chat Input
-                          </label>                          
+                          </label>
                           <AnimatedTextArea
                             ref={textareaRef}
                             id="chat-main-textarea"
                             name="content"
                             placeholder="Ask Apollo to build…"
                             defaultValue={""}
-                            onChange={e => {
-                              setHasContent(e.target.value.length > 0);
-                              setCharCount(e.target.value.length);
+                            onChange={(value: string) => {
+                              setHasContent(value.length > 0);
+                              setCharCount(value.length);
                             }}
                             onInput={handleTextareaInput}
                             onKeyDown={handleKeyDown}
                             className={`${isMobile ? "font-light p-3 text-sm" : "font-normal p-4 text-base"}`}
                             required={false}
                             disabled={isEnhancing}
-                            dataEnhancing={isEnhancing}
                           >
                             <div className="ml-auto flex items-center gap-1 min-h-0 h-8 px-1 pb-1 pt-0.5">
-                              <EnhanceButton
-                                textareaRef={textareaRef}
+                              <EnhancedButton
+                                textareaRef={textareaRef as any}
                                 hasContent={hasContent}
                                 onEnhancingStateChange={handleEnhancingStateChange}
                                 onShowAuthModal={() => setShowAuthModal(true)}
@@ -287,7 +254,6 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-
               <div className="mt-8 gap-3 flex justify-center">
                 {user?.user?.email ? (
                   <a
@@ -319,7 +285,6 @@ export default function Home() {
                 )}
               </div>
             </div>
-
             {/* Features Grid */}
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 items-center gap-2">
               <a className="group flex flex-col justify-center hover:bg-gray-50 rounded-xl p-4 md:p-7 dark:hover:bg-neutral-800" href="#">
@@ -375,10 +340,8 @@ export default function Home() {
                   </span>
                 </div>
               </a>
-
             </div>
           </div>
-
           {/* Image Section */}
           <div className="w-full">
             <Image
@@ -391,7 +354,7 @@ export default function Home() {
           </div>
         </div>
       </main>
-       {/* Auth Modal */}
+      {/* Auth Modal */}
       <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
     </div>
   );

@@ -1,0 +1,76 @@
+@keyframes silverShimmer {
+  0% {
+    background-position: 200% center;
+  }
+  100% {
+    background-position: -200% center;
+  }
+}
+
+.silver-text-container {
+  position: relative;
+  width: 100%;
+  min-height: 120px;
+  background-color: #141415;
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+.silver-editable {
+  position: relative;
+  width: 100%;
+  min-height: 120px;
+  padding: 0.75rem;
+  color: transparent;
+  background-clip: text;
+  -webkit-background-clip: text;
+  outline: none;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  cursor: text;
+}
+
+.silver-editable:empty:before {
+  content: attr(data-placeholder);
+  color: rgba(255, 255, 255, 0.4);
+  pointer-events: none;
+}
+
+.silver-editable.shimmer {
+  background-image: linear-gradient(
+    90deg,
+    #2a2a2a 0%,
+    #4a4a4a 15%,
+    silver 30%,
+    #4a4a4a 45%,
+    #2a2a2a 60%,
+    #2a2a2a 100%
+  );
+  background-size: 200% auto;
+  animation: silverShimmer 3s linear infinite;
+}
+
+.silver-editable:focus {
+  outline: none;
+}
+
+/* Scrollbar styling */
+.silver-editable::-webkit-scrollbar {
+  width: 6px;
+}
+
+.silver-editable::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.silver-editable::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.silver-editable::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}

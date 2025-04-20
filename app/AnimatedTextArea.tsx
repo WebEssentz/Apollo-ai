@@ -1,6 +1,9 @@
 "use client";
-import React, { useRef, useState, forwardRef, useImperativeHandle } from "react";
+import React, { useRef, useState, forwardRef } from "react";
 import "./animated-textarea.css";
+import SilverTextEditor from './_components/SilverTextEditor';
+import './_components/silver-text-editor.css';
+import './_components/button-container.css';
 
 interface AnimatedTextAreaProps {
   placeholder?: string;
@@ -8,42 +11,37 @@ interface AnimatedTextAreaProps {
   id?: string;
   name?: string;
   defaultValue?: string;
-  onChange?: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
-  onInput?: (e: React.FormEvent<HTMLTextAreaElement>) => void;
-  onKeyDown?: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
+  onChange?: (value: string) => void;
+  onInput?: (value: string) => void;
+  onKeyDown?: (e: React.KeyboardEvent) => void;
   rows?: number;
   maxLength?: number;
   required?: boolean;
   disabled?: boolean;
   children?: React.ReactNode;
-  dataEnhancing?: boolean;
 }
 
-const AnimatedTextArea = forwardRef<HTMLTextAreaElement, AnimatedTextAreaProps>(
-  (
-    {
-      placeholder = "",
-      className = "",
-      id = "chat-main-textarea",
-      name,
-      defaultValue = "",
-      onChange,
-      onInput,
-      onKeyDown,
-      rows = 4,
-      maxLength,
-      required = false,
-      disabled = false,
-      children,
-      dataEnhancing = false,
-    },
-    ref
-  ) => {
+const AnimatedTextArea = forwardRef<HTMLDivElement, AnimatedTextAreaProps>(
+  ({
+    placeholder = "",
+    className = "",
+    id = "chat-main-textarea",
+    name,
+    defaultValue = "",
+    onChange,
+    onInput,
+    onKeyDown,
+    rows = 4,
+    maxLength,
+    required = false,
+    disabled = false,
+    children
+  }, ref) => {
     const [isFocused, setIsFocused] = useState(false);
     const [isAnimatingOut, setIsAnimatingOut] = useState(false);
-    const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const editorRef = useRef<HTMLDivElement>(null);
 
-    useImperativeHandle(ref, () => textareaRef.current as HTMLTextAreaElement);
+    React.useImperativeHandle(ref, () => editorRef.current as HTMLDivElement);
 
     const handleFocus = () => {
       setIsAnimatingOut(false);
@@ -58,41 +56,40 @@ const AnimatedTextArea = forwardRef<HTMLTextAreaElement, AnimatedTextAreaProps>(
       }, 1000);
     };
 
-    // No overlays, no duplicate text, shimmer is only a background animation on the textarea
-    return (
+    const handleChange = (value: string) => {
+      if (onChange) {
+        // Create a synthetic event-like object to maintain compatibility
+        const syntheticEvent = {
+          target: { value },
+          currentTarget: { value }
+        };
+        onChange(syntheticEvent as any);
+      }
+      if (onInput) {
+        onInput(value);
+      }
+    };    return (
       <div className={`animated-border-textarea-container ${isFocused ? "focused" : ""} ${isAnimatingOut ? "animating-out" : ""}`}>
-        <div className="flex flex-col w-full">
-          <textarea
-            ref={el => {
-              textareaRef.current = el;
-              if (typeof ref === "function") ref(el);
-              else if (ref) (ref as React.MutableRefObject<HTMLTextAreaElement | null>).current = el;
-            }}
+        <div className="flex flex-col w-full">          <SilverTextEditor
+            ref={editorRef}
             id={id}
-            name={name}
             placeholder={placeholder}
             defaultValue={defaultValue}
-            onChange={onChange}
-            onFocus={handleFocus}
-            onBlur={handleBlur}
-            onInput={onInput}
+            onChange={handleChange}
             onKeyDown={onKeyDown}
-            rows={rows}
-            maxLength={maxLength}
-            required={required}
             disabled={disabled}
-            data-enhancing={dataEnhancing}
-            className={`animated-border-textarea ${className}`}
-            style={{
-              resize: "none",
-              minHeight: "32px",
-              maxHeight: "384px",
-              paddingBottom: "0.25rem"
-            }}
+            isShimmering={isFocused}
+            className={className}
           />
-          {children && (
-            <div className="animated-border-textarea-children flex items-center gap-1 justify-end px-1 pb-1 pt-0.5 min-h-0 h-8">
-              {children}
+          {children && (            <div className="flex items-center gap-3 px-4 py-3.5">
+              <div className="flex gap-3">
+                <div className="shrink-1 min-w-0 grow-0">
+                  {/* Project selection or other left-side controls */}
+                </div>
+              </div>
+              <div className="ml-auto flex items-center gap-3">
+                {children}
+              </div>
             </div>
           )}
         </div>
