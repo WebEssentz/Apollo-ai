@@ -1,0 +1,102 @@
+"use client";
+import React, { useRef, useState, forwardRef } from "react";
+import "./animated-textarea.css";
+
+interface AnimatedTextAreaProps {
+  placeholder?: string;
+  className?: string;
+  id?: string;
+  name?: string;
+  defaultValue?: string;
+  onChange?: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  onInput?: (e: React.FormEvent<HTMLTextAreaElement>) => void;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
+  rows?: number;
+  maxLength?: number;
+  required?: boolean;
+  disabled?: boolean;
+  children?: React.ReactNode; // Add support for icon buttons as children
+}
+
+const AnimatedTextArea = forwardRef<HTMLTextAreaElement, AnimatedTextAreaProps>(
+  (
+    {      
+      placeholder = "",
+      className = "",
+      id = "chat-main-textarea",
+      name,
+      defaultValue = "",
+      onChange,
+      onInput,
+      onKeyDown,
+      rows = 4,
+      maxLength,
+      required = false,
+      disabled = false,
+      children
+    },
+    ref
+  ) => {
+    const [isFocused, setIsFocused] = useState(false);
+    const [isAnimatingOut, setIsAnimatingOut] = useState(false);
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+    // Allow parent ref
+    React.useImperativeHandle(ref, () => textareaRef.current as HTMLTextAreaElement);
+
+    const handleFocus = () => {
+      setIsAnimatingOut(false);
+      setIsFocused(true);
+    };
+
+    const handleBlur = () => {
+      setIsFocused(false);
+      setIsAnimatingOut(true);
+      setTimeout(() => {
+        setIsAnimatingOut(false);
+      }, 1000);
+    };
+
+    return (
+      <div className={`animated-border-textarea-container ${isFocused ? "focused" : ""} ${isAnimatingOut ? "animating-out" : ""}`}>
+        <div className="flex flex-col w-full">
+          <textarea          
+            ref={el => {
+              textareaRef.current = el;
+              if (typeof ref === "function") ref(el);
+              else if (ref) (ref as React.MutableRefObject<HTMLTextAreaElement | null>).current = el;
+            }}
+            id={id}
+            name={name}
+            placeholder={placeholder}
+            defaultValue={defaultValue}
+            onChange={onChange}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            onInput={onInput}
+            onKeyDown={onKeyDown}
+            rows={rows}
+            maxLength={maxLength}
+            required={required}
+            disabled={disabled}
+            className={`animated-border-textarea ${className}`}
+            style={{
+              resize: "none",
+              minHeight: "42px",
+              maxHeight: "384px",
+              paddingBottom: "0.375rem" // pb-1.5 in Tailwind
+            }}
+          />
+          {children && (
+            <div className="flex items-center gap-2 p-3">
+              {children}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+);
+AnimatedTextArea.displayName = "AnimatedTextArea";
+
+export default AnimatedTextArea;

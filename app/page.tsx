@@ -11,6 +11,7 @@ import { useEffect, useState, useRef } from "react"
 import { useIsMobile } from "../hooks/use-mobile"
 import EnhancedButton from "./_components/EnhancedButton"
 import AuthModal from "./_components/AuthModal"
+import AnimatedTextArea from "./AnimatedTextArea"
 
 export default function Home() {
   const user = useAuthContext()
@@ -18,7 +19,12 @@ export default function Home() {
   const [hasContent, setHasContent] = useState(false)
   const [showAuthModal, setShowAuthModal] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+// type: React.RefObject<HTMLTextAreaElement>
   const isMobile = useIsMobile()
+  const [charCount, setCharCount] = useState(0)
+  const formRef = useRef<HTMLFormElement>(null)
+  const [isEnhancing, setIsEnhancing] = useState(false)
+
 
   // Handle scroll effect for header
   useEffect(() => {
@@ -29,13 +35,75 @@ export default function Home() {
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
+  // Handle focus/blur animation for the form
+  useEffect(() => {
+    const form = formRef.current
+    const textarea = textareaRef.current
 
-  // Auto-resize textarea based on content
+    if (!form || !textarea) return
+
+    const handleFocus = (e: FocusEvent) => {
+      // Only trigger animation if the textarea itself is focused
+      if (e.target === textarea) {
+        form.classList.add("water-rush-in")
+        form.classList.remove("blur-animation")
+      }
+    }
+
+    const handleBlur = (e: FocusEvent) => {
+      // Only trigger animation if we're not focusing another element within the form
+      if (e.target === textarea) {
+        form.classList.remove("water-rush-in")
+        form.classList.add("blur-animation")
+        setTimeout(() => {
+          form.classList.remove("blur-animation")
+        }, 3500) // Match the animation duration (3.5 seconds)
+      }
+    }
+
+    textarea.addEventListener("focus", handleFocus)
+    textarea.addEventListener("blur", handleBlur)
+
+    return () => {
+      textarea.removeEventListener("focus", handleFocus)
+      textarea.removeEventListener("blur", handleBlur)
+    }
+  }, [])
+
+   // Auto-resize textarea based on content and scroll to bottom
   const handleTextareaInput = (e: React.FormEvent<HTMLTextAreaElement>) => {
     const textarea = e.currentTarget
     if (textarea) {
+      // Save current scroll position and selection
+      const scrollTop = textarea.scrollTop
+      const selectionStart = textarea.selectionStart
+      const selectionEnd = textarea.selectionEnd
+
+      // Temporarily reset height to calculate proper scrollHeight
       textarea.style.height = "auto"
-      textarea.style.height = `${Math.min(textarea.scrollHeight, 384)}px`
+      
+      // Calculate new height with max height limit
+      const maxHeight = 200
+      const newHeight = Math.min(textarea.scrollHeight, maxHeight)
+      textarea.style.height = `${newHeight}px`
+      
+      // If content exceeds max height, ensure proper scrolling
+      if (textarea.scrollHeight > maxHeight) {
+        textarea.style.overflowY = "auto"
+        
+        // If cursor is at the end, scroll to bottom
+        if (selectionEnd === textarea.value.length) {
+          textarea.scrollTop = textarea.scrollHeight
+        } else {
+          // Restore original scroll position
+          textarea.scrollTop = scrollTop
+        }
+      } else {
+        textarea.style.overflowY = "hidden"
+      }
+
+      // Restore selection
+      textarea.setSelectionRange(selectionStart, selectionEnd)
       setHasContent(textarea.value.length > 0)
     }
   }
@@ -43,7 +111,7 @@ export default function Home() {
    // Handle key press in textarea
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     // Show auth modal when Enter is pressed without Shift
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey && !isEnhancing) {
       e.preventDefault()
       setShowAuthModal(true)
     }
@@ -51,8 +119,16 @@ export default function Home() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    setShowAuthModal(true)
+    if (!isEnhancing) {
+      setShowAuthModal(true)
+    }
   }
+
+  // Handle enhancing state changes from EnhanceButton
+  const handleEnhancingStateChange = (enhancingState: boolean) => {
+    setIsEnhancing(enhancingState)
+  }
+
 
   return (
     <div className="min-h-screen-patched bg-background flex w-full">
@@ -125,63 +201,85 @@ export default function Home() {
                         <div className="relative z-10 grid min-h-[120px] rounded-xl w-full">
                           <label className="sr-only" htmlFor="chat-main-textarea">
                             Chat Input
-                          </label>
-                          <textarea
+                          </label>                          
+                          <AnimatedTextArea
                             ref={textareaRef}
-                            onInput={handleTextareaInput}
-                            onKeyDown={handleKeyDown}
                             id="chat-main-textarea"
                             name="content"
                             placeholder="Ask Apollo to build…"
-                            spellCheck="false"
-                            className={`resize-none overflow-auto w-full flex-1 outline-none ring-0 placeholder:text-gray-300 text-white transition-all duration-200 focus:outline-none ${isMobile ? "font-light p-3 text-sm" : "font-normal p-4 text-base"}`}
-                            autoComplete="off"
-                            style={{
-                              height: "80px",
-                              minHeight: "80px",
-                              maxHeight: "384px",
-                              backgroundColor: "#141415",
-                              borderRadius: "inherit",
-                              width: isMobile ? "100%" : undefined,
+                            defaultValue={""}
+                            onChange={e => {
+                              setHasContent(e.target.value.length > 0);
+                              setCharCount(e.target.value.length);
                             }}
-                            aria-label="Type your request here"
-                          />
-                          <div className="absolute bottom-3 right-3 flex items-center">
-                            {/* Enhance Button */}
-                            <EnhancedButton textareaRef={textareaRef} hasContent={hasContent} />
-
-                            {/* Submit Button */}
-                            <button
-                              className={`focus-visible:ring-offset-[#141415] inline-flex shrink-0 cursor-pointer select-none items-center justify-center gap-1.5 whitespace-nowrap text-nowrap border font-medium outline-none ring-blue-600 transition-all duration-300 focus-visible:ring-2 focus-visible:ring-offset-1 [&>svg]:pointer-events-none [&>svg]:size-4 [&_svg]:shrink-0 px-3 text-sm has-[>kbd]:gap-2 has-[>svg]:px-2 has-[>kbd]:pr-[6px] ml-1 size-7 rounded-md 
-                                ${
-                                  hasContent
-                                    ? "bg-white border-white hover:bg-gray-100 hover:border-gray-100 focus:bg-gray-100 focus:border-gray-100 scale-100 opacity-100"
-                                    : "bg-[#1f1f22] border-[#5d5d64] opacity-50 scale-95 cursor-not-allowed"
-                                }`}
-                              disabled={!hasContent}
-                              data-testid="prompt-form-send-button"
-                              type="submit"
-                            >
-                              <svg
-                                data-testid="geist-icon"
-                                height="16"
-                                strokeLinejoin="round"
-                                viewBox="0 0 16 16"
-                                width="16"
-                                className={`transition-colors duration-300 ${
-                                  hasContent ? "text-black" : "text-[#6b6b74]"
-                                }`}
+                            onInput={handleTextareaInput}
+                            onKeyDown={handleKeyDown}
+                            className={`${isMobile ? "font-light p-3 text-sm" : "font-normal p-4 text-base"}`}
+                            required={false}
+                            disabled={isEnhancing}
+                          >
+                            <div className="ml-auto flex items-center gap-1">
+                              <EnhanceButton
+                                textareaRef={textareaRef}
+                                hasContent={hasContent}
+                                onEnhancingStateChange={handleEnhancingStateChange}
+                                onShowAuthModal={() => setShowAuthModal(true)}
+                              />
+                              <button
+                                type="button"
+                                className="focus-visible:ring-offset-background inline-flex shrink-0 cursor-pointer select-none items-center justify-center gap-1.5 whitespace-nowrap text-nowrap border font-medium outline-none ring-blue-600 transition-[background,border-color,color,transform,opacity,box-shadow] focus-visible:ring-2 focus-visible:ring-offset-1 [&>svg]:pointer-events-none [&>svg]:size-4 [&_svg]:shrink-0 border-transparent hover:border-transparent focus:border-transparent focus-visible:border-transparent px-3 text-sm has-[>kbd]:gap-2 has-[>svg]:px-2 has-[>kbd]:pr-[6px] focus:bg-muted hover:text-foreground ml-[-2px] h-7 w-7 rounded-md hover:bg-neutral-800 focus-visible:bg-neutral-800"
+                                onClick={() => setShowAuthModal(true)}
                               >
-                                <path
-                                  fillRule="evenodd"
-                                  clipRule="evenodd"
-                                  d="M8.70711 1.39644C8.31659 1.00592 7.68342 1.00592 7.2929 1.39644L2.21968 6.46966L1.68935 6.99999L2.75001 8.06065L3.28034 7.53032L7.25001 3.56065V14.25V15H8.75001V14.25V3.56065L12.7197 7.53032L13.25 8.06065L14.3107 6.99999L13.7803 6.46966L8.70711 1.39644Z"
-                                  fill="currentColor"
-                                />
-                              </svg>
-                              <span className="sr-only">Send Message</span>
-                            </button>
-                          </div>
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  width="16"
+                                  height="16"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  className="size-4"
+                                >
+                                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                  <polyline points="17 8 12 3 7 8" />
+                                  <line x1="12" y1="3" x2="12" y2="15" />
+                                </svg>
+                                <span className="sr-only">Upload File</span>
+                              </button>
+                              <button
+                                className={`focus-visible:ring-offset-[#141415] inline-flex shrink-0 cursor-pointer select-none items-center justify-center gap-1.5 whitespace-nowrap text-nowrap border font-medium outline-none ring-blue-600 transition-all duration-300 focus-visible:ring-2 focus-visible:ring-offset-1 [&>svg]:pointer-events-none [&>svg]:size-4 [&_svg]:shrink-0 px-3 text-sm has-[>kbd]:gap-2 has-[>svg]:px-2 has-[>kbd]:pr-[6px] ml-1 size-7 rounded-md 
+                                  ${
+                                    hasContent && !isEnhancing
+                                      ? "bg-white border-white hover:bg-gray-100 hover:border-gray-100 focus:bg-gray-100 focus:border-gray-100 scale-100 opacity-100"
+                                      : "bg-[#1f1f22] border-[#5d5d64] opacity-50 scale-95 cursor-not-allowed"
+                                  }`}
+                                disabled={!hasContent || isEnhancing}
+                                data-testid="prompt-form-send-button"
+                                type="submit"
+                              >
+                                <svg
+                                  data-testid="geist-icon"
+                                  height="16"
+                                  strokeLinejoin="round"
+                                  viewBox="0 0 16 16"
+                                  width="16"
+                                  className={`transition-colors duration-300 ${
+                                    hasContent && !isEnhancing ? "text-black" : "text-[#6b6b74]"
+                                  }`}
+                                >
+                                  <path
+                                    fillRule="evenodd"
+                                    clipRule="evenodd"
+                                    d="M8.70711 1.39644C8.31659 1.00592 7.68342 1.00592 7.2929 1.39644L2.21968 6.46966L1.68935 6.99999L2.75001 8.06065L3.28034 7.53032L7.25001 3.56065V14.25V15H8.75001V14.25V3.56065L12.7197 7.53032L13.25 8.06065L14.3107 6.99999L13.7803 6.46966L8.70711 1.39644Z"
+                                    fill="currentColor"
+                                  />
+                                </svg>
+                                <span className="sr-only">Send Message</span>
+                              </button>
+                            </div>
+                          </AnimatedTextArea>
                         </div>
                       </form>
                     </div>
@@ -189,20 +287,35 @@ export default function Home() {
                 </div>
               </div>
 
-
               <div className="mt-8 gap-3 flex justify-center">
-                {user?.user?.email ? 
-                  <a className="inline-flex justify-center items-center 
+                {user?.user?.email ? (
+                  <a
+                    className="inline-flex justify-center items-center 
       gap-x-3 text-center bg-gradient-to-tl from-blue-600
        to-violet-600 hover:from-violet-600 hover:to-blue-600 border border-transparent text-white text-sm font-medium rounded-md focus:outline-none focus:ring-1 focus:ring-gray-600 py-3 px-4 dark:focus:ring-offset-gray-800"
-                    href="/dashboard">
+                    href="/dashboard"
+                  >
                     Get started
-                    <svg className="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
+                    <svg
+                      className="flex-shrink-0 size-4"
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="m9 18 6-6-6-6" />
+                    </svg>
                   </a>
-                  : <Authentication >
+                ) : (
+                  <Authentication>
                     <Button>Get Started</Button>
                   </Authentication>
-                }
+                )}
               </div>
             </div>
 

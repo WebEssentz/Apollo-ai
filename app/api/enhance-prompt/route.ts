@@ -2,38 +2,15 @@ import { GoogleGenAI } from "@google/genai"
 
 // Validate input meets requirements
 function validateInput(input: string): { valid: boolean; message?: string } {
-  // Count words (excluding punctuation)
-  const wordCount = input
-    .replace(/[^\w\s]/g, "")
-    .split(/\s+/)
-    .filter(Boolean).length
+  // Check character count (not word count)
+  const charCount = input.length
 
-  if (wordCount < 10) {
-    return { valid: false, message: "Input must be at least 10 words." }
+  if (charCount < 100) {
+    return { valid: false, message: "Input must be at least 100 characters." }
   }
 
-  // Check if prompt is too long
-  if (wordCount > 100) {
-    return { valid: false, message: "Input is too long. Please limit to 100 words or less." }
-  }
-
-  // Check for vague requests
-  const vaguePhrases = ["website", "app", "something", "anything", "help me"]
-  const hasSpecificContext = !vaguePhrases.some(
-    (phrase) =>
-      input.toLowerCase().includes(phrase) &&
-      input
-        .toLowerCase()
-        .split(/\s+/)
-        .filter((w) => w === phrase).length === 1 &&
-      input.length < 100,
-  )
-
-  if (!hasSpecificContext) {
-    return {
-      valid: false,
-      message: "Please provide more specific details about what you want to build.",
-    }
+  if (charCount > 1000) {
+    return { valid: false, message: "Input is too long. Please limit to 1000 characters or less." }
   }
 
   return { valid: true }
@@ -61,9 +38,9 @@ export async function POST(request: Request) {
     // Use a more reliable model version
     const modelName = "gemini-2.5-pro-preview-03-25" // Using a more stable model
 
-    // Create the prompt for Gemini - UPDATED FOR MORE CONCISE OUTPUT
+    // Create the prompt for Gemini - UPDATED FOR CHARACTER LIMITS
     const geminiPrompt = `
-    Enhance the following prompt to make it more structured and specific, but keep it BRIEF and CONCISE (no more than 5-6 lines total):
+    Enhance the following prompt to make it more structured and specific, but keep it BRIEF and CONCISE (between 100-1000 characters total):
     
     "${prompt}"
     
@@ -72,6 +49,7 @@ export async function POST(request: Request) {
     2. Use professional but concise language
     3. Focus only on the most important aspects
     4. Avoid unnecessary details or explanations
+    5. Ensure the total character count is between 100-1000 characters
     
     Return ONLY the enhanced prompt with no explanations or reasoning.
     `
@@ -115,12 +93,20 @@ export async function POST(request: Request) {
       // Clean the response to remove any thinking process
       const cleanedResponse = enhancedPrompt.replace(/^Thinking Process:[\s\S]*?(Result:|Enhanced Prompt:)/i, "").trim()
 
-      // Ensure the response is not too verbose
-      const lines = cleanedResponse.split("\n").filter((line) => line.trim() !== "")
-      if (lines.length > 8) {
-        // If too verbose, truncate to 8 lines
-        const truncatedResponse = lines.slice(0, 8).join("\n")
+      // Ensure the response is within character limits
+      if (cleanedResponse.length > 1000) {
+        const truncatedResponse = cleanedResponse.substring(0, 1000)
         return Response.json({ enhancedPrompt: truncatedResponse })
+      }
+
+      // Ensure the response is not too short
+      if (cleanedResponse.length < 100) {
+        // Add generic closing if needed to reach minimum length
+        let extendedResponse = cleanedResponse
+        if (extendedResponse.length < 100) {
+          extendedResponse += "\n\nPlease provide implementation details and consider best practices."
+        }
+        return Response.json({ enhancedPrompt: extendedResponse })
       }
 
       return Response.json({ enhancedPrompt: cleanedResponse })
@@ -140,7 +126,7 @@ export async function POST(request: Request) {
   }
 }
 
-// Fallback function to enhance prompts without API - UPDATED FOR MORE CONCISE OUTPUT
+// Fallback function to enhance prompts without API - UPDATED FOR CHARACTER LIMITS
 function manuallyEnhancePrompt(prompt: string): string {
   // Convert to lowercase and capitalize first letter of sentences
   const formattedPrompt = prompt.toLowerCase().replace(/(^\s*\w|[.!?]\s*\w)/g, (c) => c.toUpperCase())
@@ -196,6 +182,16 @@ function manuallyEnhancePrompt(prompt: string): string {
     enhanced += "3. Performance optimization\n"
 
     enhanced += "\nProvide implementation approach."
+  }
+
+  // Ensure the enhanced prompt is within character limits
+  if (enhanced.length > 1000) {
+    enhanced = enhanced.substring(0, 1000)
+  }
+
+  // Ensure the enhanced prompt meets minimum character count
+  if (enhanced.length < 100) {
+    enhanced += "\n\nPlease provide implementation details and consider best practices."
   }
 
   return enhanced

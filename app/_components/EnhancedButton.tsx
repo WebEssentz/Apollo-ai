@@ -4,57 +4,75 @@ import type React from "react"
 import { useState, useRef, useEffect } from "react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
-interface EnhanceButtonProps {
+interface EnhancedButtonProps {
   textareaRef: React.RefObject<HTMLTextAreaElement | null>
   hasContent: boolean
+  onEnhancingStateChange?: (isEnhancing: boolean) => void
+  onShowAuthModal: () => void // New prop to show auth modal
 }
 
-export default function EnhanceButton({ textareaRef, hasContent }: EnhanceButtonProps) {
+export default function EnhancedButton({
+  textareaRef,
+  hasContent,
+  onEnhancingStateChange,
+  onShowAuthModal,
+}: EnhancedButtonProps) {
   const [isEnhancing, setIsEnhancing] = useState(false)
   const [isAnimating, setIsAnimating] = useState(false)
-  const [meetsWordCount, setMeetsWordCount] = useState(false)
+  const [meetsCharLimit, setMeetsCharLimit] = useState(false)
+  const [isAlreadyEnhanced, setIsAlreadyEnhanced] = useState(false)
+  const [enhancedText, setEnhancedText] = useState<string | null>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
 
-  // Check word count whenever textarea content changes
+  // Check character count whenever textarea content changes
   useEffect(() => {
-    const checkWordCount = () => {
+    const checkCharLimit = () => {
       if (!textareaRef.current) return
 
       const text = textareaRef.current.value
-      const wordCount = text
-        .replace(/[^\w\s]/g, "")
-        .split(/\s+/)
-        .filter(Boolean).length
+      const charCount = text.length
 
-      setMeetsWordCount(wordCount >= 10 && wordCount <= 100)
+      // Update character limit state - using character count (100-1000 characters)
+      setMeetsCharLimit(charCount >= 100 && charCount <= 1000)
+
+      // Check if the content is already enhanced
+      if (enhancedText !== null) {
+        setIsAlreadyEnhanced(text === enhancedText)
+      }
     }
 
     // Initial check
-    checkWordCount()
+    checkCharLimit()
 
     // Set up event listener for input changes
     const textarea = textareaRef.current
     if (textarea) {
-      textarea.addEventListener("input", checkWordCount)
-      return () => textarea.removeEventListener("input", checkWordCount)
+      textarea.addEventListener("input", checkCharLimit)
+      return () => textarea.removeEventListener("input", checkCharLimit)
     }
-  }, [textareaRef])
+  }, [textareaRef, enhancedText])
 
-  // Silver flash animation on words - improved for better visual effect
+  // Notify parent component about enhancing state changes
+  useEffect(() => {
+    if (onEnhancingStateChange) {
+      onEnhancingStateChange(isEnhancing)
+    }
+  }, [isEnhancing, onEnhancingStateChange])
+
+  // Sun-kissed silver metal flash animation with enhanced effect
   const silverFlashAnimation = (element: HTMLTextAreaElement) => {
     const originalText = element.value
-    const words = originalText.split(/\s+/)
 
-    // Apply active state gradient to the form
+    // Apply active state gradient to the form with specific colors (#042f2e and #1e988a)
     const form = element.closest("form")
     if (form) {
       form.classList.add("ai-generating")
     }
 
-    // Clear the textarea
-    element.value = ""
+    // Save original scroll position
+    const originalScrollTop = element.scrollTop
 
-    // Create a container for the animation
+    // Create a container for the animation that matches the textarea exactly
     const container = document.createElement("div")
     container.className = "silver-typewriter-container"
     container.style.position = "absolute"
@@ -62,60 +80,44 @@ export default function EnhanceButton({ textareaRef, hasContent }: EnhanceButton
     container.style.left = "0"
     container.style.right = "0"
     container.style.bottom = "0"
-    container.style.padding = "inherit"
+    container.style.padding = window.getComputedStyle(element).padding
     container.style.backgroundColor = "#141415"
     container.style.color = "white"
     container.style.overflow = "auto"
     container.style.borderRadius = "inherit"
+    container.style.fontSize = window.getComputedStyle(element).fontSize
+    container.style.fontFamily = window.getComputedStyle(element).fontFamily
+    container.style.lineHeight = window.getComputedStyle(element).lineHeight
 
     // Insert the container
     element.parentNode?.insertBefore(container, element.nextSibling)
 
-    // Flash each word with silver effect
-    let wordIndex = 0
-    let displayedText = ""
+    // Break text into spans for more precise animation control
+    const wrappedText = originalText
+      .split("\n")
+      .map((line) => `<div>${line || " "}</div>`)
+      .join("")
 
-    function flashNextWord() {
-      if (wordIndex < words.length) {
-        const currentWord = words[wordIndex]
-        displayedText += (wordIndex > 0 ? " " : "") + currentWord
-        
-        // Update container with all text, but highlight the current word
-        let html = ""
-        const displayedWords = displayedText.split(/\s+/)
-        
-        for (let i = 0; i < displayedWords.length; i++) {
-          if (i === displayedWords.length - 1) {
-            // Current word with flash effect
-            html += `<span class="silver-flash">${displayedWords[i]}</span>`
-          } else {
-            // Previous words
-            html += `<span>${displayedWords[i]} </span>`
-          }
-        }
-        
-        container.innerHTML = html
-        
-        // Auto-scroll to bottom
-        container.scrollTop = container.scrollHeight
-        
-        wordIndex++
-        setTimeout(flashNextWord, 100) // Flash duration
-      } else {
-        // All words flashed, now start the silver typewriter
-        setTimeout(() => {
-          silverTypewriterEffect(originalText, element, container)
-        }, 300)
-      }
-    }
+    // Add the original text with enhanced silver flash effect
+    container.innerHTML = `<div class="sun-kissed-silver">${wrappedText}</div>`
 
-    // Start the flashing animation
-    flashNextWord()
+    // Match the scroll position
+    container.scrollTop = originalScrollTop
+
+    // Ensure bottom content is visible
+    setTimeout(() => {
+      container.scrollTop = container.scrollHeight
+    }, 50)
+
+    // After the flash animation completes, start the typewriter effect
+    setTimeout(() => {
+      silverTypewriterEffect(originalText, element, container)
+    }, 800) // Wait for flash animation to complete
   }
 
-  // Silver typewriter effect - improved for real-time streaming
+  // Silver typewriter effect - improved for smoother animation and scrolling
   const silverTypewriterEffect = (text: string, element: HTMLTextAreaElement, container: HTMLDivElement) => {
-    // Simulate API call to get enhanced text
+    // Get enhanced text from API with validation
     const enhancePromptAsync = async (prompt: string) => {
       try {
         const response = await fetch("/api/enhance-prompt", {
@@ -127,7 +129,8 @@ export default function EnhanceButton({ textareaRef, hasContent }: EnhanceButton
         })
 
         if (!response.ok) {
-          throw new Error("Failed to enhance prompt")
+          const errorData = await response.json()
+          throw new Error(errorData.error || "Failed to enhance prompt")
         }
 
         const data = await response.json()
@@ -138,16 +141,18 @@ export default function EnhanceButton({ textareaRef, hasContent }: EnhanceButton
       }
     }
 
-    // Start streaming effect
+    // Start streaming effect with smoother animation
     let typedText = ""
     let enhancedText = ""
     let isStreaming = false
     let charIndex = 0
-    const streamSpeed = 5 // ms between characters for near-instantaneous effect
+    const streamSpeed = 12 // Slightly faster for better UX
+    let lastNewlineIndex = -1 // Track last newline for better line-by-line rendering
 
     // Start the API call
     enhancePromptAsync(text).then((result) => {
       enhancedText = result
+      setEnhancedText(result) // Store the enhanced text for future comparison
       if (!isStreaming) {
         startStreaming()
       }
@@ -160,16 +165,23 @@ export default function EnhanceButton({ textareaRef, hasContent }: EnhanceButton
 
     function streamNextChar() {
       if (charIndex < enhancedText.length) {
-        typedText += enhancedText.charAt(charIndex)
+        const currentChar = enhancedText.charAt(charIndex)
+        typedText += currentChar
 
-        // Format the text for readability
-        const formattedText = formatStreamedText(typedText)
+        // Check if we just added a newline character
+        const isNewline = currentChar === "\n"
+        if (isNewline) {
+          lastNewlineIndex = charIndex
+        }
 
-        // Update the container with the typed text and a silver cursor
-        container.innerHTML = `
-          <div class="streamed-content">${formattedText}</div>
-          <span class="silver-cursor">|</span>
-        `
+        // Format text with appropriate line breaks for HTML display
+        const formattedText = typedText
+          .split("\n")
+          .map((line) => `<div>${line || " "}</div>`)
+          .join("")
+
+        // Update the container with the typed text (no cursor)
+        container.innerHTML = formattedText
 
         // Update the actual textarea value (hidden behind the container)
         element.value = typedText
@@ -178,11 +190,37 @@ export default function EnhanceButton({ textareaRef, hasContent }: EnhanceButton
         const event = new Event("input", { bubbles: true })
         element.dispatchEvent(event)
 
-        // Auto-scroll to bottom
-        container.scrollTop = container.scrollHeight
+        // Smooth auto-scroll to bottom
+        const shouldScrollToBottom =
+          // Always scroll if we're near the bottom already
+          container.scrollHeight - container.scrollTop - container.clientHeight < 50 ||
+          // Always scroll on newline
+          isNewline ||
+          // Always scroll at the end
+          charIndex === enhancedText.length - 1
+
+        if (shouldScrollToBottom) {
+          // Smooth scroll to bottom
+          container.scrollTo({
+            top: container.scrollHeight,
+            behavior: "smooth",
+          })
+          element.scrollTo({
+            top: element.scrollHeight,
+            behavior: "smooth",
+          })
+        }
 
         charIndex++
-        setTimeout(streamNextChar, streamSpeed)
+
+        // Slight randomization for more natural typing feel
+        const randomVariation = Math.random() * 5 - 2.5 // -2.5 to +2.5ms
+        const adjustedSpeed = streamSpeed + randomVariation
+
+        // Slight pause after periods and newlines
+        const delay = isNewline || enhancedText.charAt(charIndex - 1) === "." ? adjustedSpeed * 3 : adjustedSpeed
+
+        setTimeout(streamNextChar, delay)
       } else {
         // Typing complete, remove the container and show the textarea
         setTimeout(() => {
@@ -193,6 +231,9 @@ export default function EnhanceButton({ textareaRef, hasContent }: EnhanceButton
           const event = new Event("input", { bubbles: true })
           element.dispatchEvent(event)
 
+          // Final scroll to bottom
+          element.scrollTop = element.scrollHeight
+
           // Remove active state gradient
           const form = element.closest("form")
           if (form) {
@@ -200,45 +241,55 @@ export default function EnhanceButton({ textareaRef, hasContent }: EnhanceButton
           }
 
           setIsEnhancing(false)
+          setIsAlreadyEnhanced(true)
         }, 300)
       }
     }
   }
 
-  // Format streamed text for better readability
-  const formatStreamedText = (text: string): string => {
-    // Add line breaks for numbered lists
-    let formatted = text.replace(/(\d+\.\s)/g, '<br>$1')
-    
-    // Add line breaks after periods that end sentences (not in numbers)
-    formatted = formatted.replace(/(\.\s)(?=[A-Z])/g, '$1<br>')
-    
-    // Add line breaks for better paragraph structure
-    formatted = formatted.replace(/(\n)/g, '<br>')
-    
-    return formatted
-  }
-
   const handleEnhance = async () => {
-    if (!hasContent || isEnhancing || !meetsWordCount) return
+    if (!hasContent || isEnhancing || !meetsCharLimit || isAlreadyEnhanced) return
 
-    const textarea = textareaRef.current
-    if (!textarea) return
+    // Show auth modal when enhance button is clicked
+    onShowAuthModal()
+    return
 
-    // Start animation
-    setIsEnhancing(true)
-    setIsAnimating(true)
+    // // The code below will not execute due to the return above
+    // // It's kept for reference in case we want to change the behavior later
 
-    // Start the silver flash animation
-    silverFlashAnimation(textarea)
+    // const textarea = textareaRef.current
+    // if (!textarea) return
 
-    // End button animation after a delay
-    setTimeout(() => {
-      setIsAnimating(false)
-    }, 2000)
+    // // Validate content length one more time before proceeding
+    // const charCount = textarea.value.length
+    // if (charCount < 100 || charCount > 1000) {
+    //   return
+    // }
+
+    // // Start animation
+    // setIsEnhancing(true)
+    // setIsAnimating(true)
+
+    // // Apply sparkle animation to the button
+    // if (buttonRef.current) {
+    //   buttonRef.current.classList.add("enhance-button-sparkle")
+    // }
+
+    // // Start the silver flash animation
+    // silverFlashAnimation(textarea)
+
+    // // End button animation after the enhancement is complete (handled in the typewriter effect)
+    // setTimeout(() => {
+    //   setIsAnimating(false)
+
+    //   // Remove sparkle after animation completes
+    //   if (buttonRef.current) {
+    //     buttonRef.current.classList.remove("enhance-button-sparkle")
+    //   }
+    // }, 4000) // Longer duration to match the full enhancement process
   }
 
-  // Fallback function to enhance prompts without API - simplified for less verbose output
+  // Fallback function to enhance prompts without API
   const fallbackEnhancePrompt = (prompt: string): string => {
     // Convert to lowercase and capitalize first letter of sentences
     const formattedPrompt = prompt.toLowerCase().replace(/(^\s*\w|[.!?]\s*\w)/g, (c) => c.toUpperCase())
@@ -299,6 +350,36 @@ export default function EnhanceButton({ textareaRef, hasContent }: EnhanceButton
     return enhanced
   }
 
+  // Get tooltip content based on current state
+  const getTooltipContent = () => {
+    if (!hasContent) {
+      return "Enter some text to enhance"
+    }
+
+    if (isEnhancing) {
+      return "Enhancing your prompt..."
+    }
+
+    if (isAlreadyEnhanced) {
+      return "This prompt is already enhanced"
+    }
+
+    if (!meetsCharLimit) {
+      const text = textareaRef.current?.value || ""
+      const charCount = text.length
+
+      if (charCount < 100) {
+        return "Prompt is too short. Min length is 100 characters."
+      }
+
+      if (charCount > 1000) {
+        return "Prompt is too long. Max length is 1000 characters."
+      }
+    }
+
+    return "Click to enhance prompt"
+  }
+
   return (
     <TooltipProvider>
       <Tooltip>
@@ -307,10 +388,10 @@ export default function EnhanceButton({ textareaRef, hasContent }: EnhanceButton
             ref={buttonRef}
             onClick={handleEnhance}
             className={`focus-visible:ring-offset-background inline-flex shrink-0 cursor-pointer select-none items-center justify-center gap-1.5 whitespace-nowrap text-nowrap border font-medium outline-none ring-blue-600 transition-[background,border-color,color,transform,opacity,box-shadow] focus-visible:ring-2 focus-visible:ring-offset-1 disabled:pointer-events-none disabled:cursor-not-allowed disabled:ring-0 has-[:focus-visible]:ring-2 [&>svg]:pointer-events-none [&>svg]:size-4 [&_svg]:shrink-0 hover:bg-gray-200 dark:hover:bg-gray-800 focus-visible:bg-gray-200 dark:focus-visible:bg-gray-800 border-transparent bg-transparent text-gray-900 dark:text-white hover:border-transparent focus:border-transparent focus-visible:border-transparent disabled:border-transparent disabled:bg-transparent disabled:text-gray-400 px-3 text-sm has-[>kbd]:gap-2 has-[>svg]:px-2 has-[>kbd]:pr-[6px] group size-7 rounded-md ${
-              isEnhancing ? "data-[loading=true]:bg-gray-100" : ""
+              isEnhancing ? "enhance-button-sparkle" : ""
             }`}
             data-loading={isEnhancing ? "true" : "false"}
-            disabled={!hasContent || isEnhancing || !meetsWordCount}
+            disabled={!hasContent || isEnhancing || !meetsCharLimit || isAlreadyEnhanced}
             type="button"
             aria-label="Enhance prompt"
           >
@@ -321,7 +402,9 @@ export default function EnhanceButton({ textareaRef, hasContent }: EnhanceButton
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
               className={`transition-colors duration-300 ${
-                hasContent && !isEnhancing && meetsWordCount ? "text-gray-900 dark:text-white" : "text-gray-400"
+                hasContent && !isEnhancing && meetsCharLimit && !isAlreadyEnhanced
+                  ? "text-gray-900 dark:text-white"
+                  : "text-gray-400"
               }`}
             >
               <path
@@ -348,17 +431,8 @@ export default function EnhanceButton({ textareaRef, hasContent }: EnhanceButton
             </svg>
           </button>
         </TooltipTrigger>
-        <TooltipContent 
-          side="top" 
-          className="bg-neutral-900 text-white border-neutral-800 text-sm"
-        >
-          {!hasContent ? (
-            "Enter some text to enhance"
-          ) : !meetsWordCount ? (
-            "This prompt is too short to enhance"
-          ) : (
-            "Click to enhance prompt"
-          )}
+        <TooltipContent side="top" className="bg-neutral-900 text-white border-neutral-800 text-sm">
+          {getTooltipContent()}
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
