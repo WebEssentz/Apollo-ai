@@ -39,17 +39,17 @@ const SilverTextEditor = forwardRef<HTMLDivElement, SilverTextEditorProps>(
       // Handle empty state for placeholder
       if (!value) {
         e.currentTarget.innerHTML = '';
-      }
-
-      // Smooth auto-scroll to bottom
+      }      // Smooth auto-scroll to bottom
       requestAnimationFrame(() => {
-        const scrollHeight = e.currentTarget.scrollHeight;
-        const clientHeight = e.currentTarget.clientHeight;
-        if (scrollHeight > clientHeight) {
-          e.currentTarget.scrollTo({
-            top: scrollHeight,
-            behavior: 'smooth'
-          });
+        if (e.currentTarget && e.currentTarget.scrollHeight) {
+          const scrollHeight = e.currentTarget.scrollHeight;
+          const clientHeight = e.currentTarget.clientHeight;
+          if (scrollHeight > clientHeight) {
+            e.currentTarget.scrollTo({
+              top: scrollHeight,
+              behavior: 'smooth'
+            });
+          }
         }
       });
     };

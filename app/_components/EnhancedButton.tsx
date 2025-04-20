@@ -45,11 +45,12 @@ export default function EnhancedButton({
       return () => textarea.removeEventListener("input", checkCharLimit);
     }
   }, [textareaRef, enhancedText]);
-
   // Enhance shimmer flash: only add a class to textarea, no overlay/duplicate text!
-  const flashShimmer = (el: HTMLTextAreaElement) => {
-    el.classList.add("shimmer-flash");
-    setTimeout(() => el.classList.remove("shimmer-flash"), 1100);
+  const flashShimmer = (el: HTMLTextAreaElement | HTMLDivElement) => {
+    if (el && 'classList' in el) {
+      el.classList.add("shimmer-flash");
+      setTimeout(() => el.classList.remove("shimmer-flash"), 1100);
+    }
   };
 
   // --- Typewriter effect and AI stream logic from previous code ---
