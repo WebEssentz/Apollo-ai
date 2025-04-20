@@ -187,7 +187,7 @@ export default function Home() {
               </div>
 
               {/* Enhanced Textarea section */}
-              <div className="mt-6 w-full max-w-3xl px-4 sm:px-4 md:px-6">
+              <div className="mt-6 w-full max-w-3xl px-4 sm:px-4 md:px-6 @container/textarea">
                 <div
                   className={`group/form-container content-center relative mx-auto w-full ${isMobile ? "max-w-full px-0" : "max-w-[49rem] px-2 sm:px-0"}`}
                 >
@@ -217,6 +217,7 @@ export default function Home() {
                             className={`${isMobile ? "font-light p-3 text-sm" : "font-normal p-4 text-base"}`}
                             required={false}
                             disabled={isEnhancing}
+                            dataEnhancing={isEnhancing}
                           >
                             <div className="ml-auto flex items-center gap-1 min-h-0 h-8 px-1 pb-1 pt-0.5">
                               <EnhanceButton

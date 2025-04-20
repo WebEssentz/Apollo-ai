@@ -1,14 +1,14 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState, useRef, useEffect } from "react"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import type React from "react";
+import { useState, useRef, useEffect } from "react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface EnhancedButtonProps {
-  textareaRef: React.RefObject<HTMLTextAreaElement | null>
-  hasContent: boolean
-  onEnhancingStateChange?: (isEnhancing: boolean) => void
-  onShowAuthModal: () => void // New prop to show auth modal
+  textareaRef: React.RefObject<HTMLTextAreaElement | null>;
+  hasContent: boolean;
+  onEnhancingStateChange?: (isEnhancing: boolean) => void;
+  onShowAuthModal: () => void;
 }
 
 export default function EnhancedButton({
@@ -17,106 +17,41 @@ export default function EnhancedButton({
   onEnhancingStateChange,
   onShowAuthModal,
 }: EnhancedButtonProps) {
-  const [isEnhancing, setIsEnhancing] = useState(false)
-  const [isAnimating, setIsAnimating] = useState(false)
-  const [meetsCharLimit, setMeetsCharLimit] = useState(false)
-  const [isAlreadyEnhanced, setIsAlreadyEnhanced] = useState(false)
-  const [enhancedText, setEnhancedText] = useState<string | null>(null)
-  const buttonRef = useRef<HTMLButtonElement>(null)
+  const [isEnhancing, setIsEnhancing] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [meetsCharLimit, setMeetsCharLimit] = useState(false);
+  const [isAlreadyEnhanced, setIsAlreadyEnhanced] = useState(false);
+  const [enhancedText, setEnhancedText] = useState<string | null>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
-  // Check character count whenever textarea content changes
+  // Character count logic (unchanged)
   useEffect(() => {
     const checkCharLimit = () => {
-      if (!textareaRef.current) return
-
-      const text = textareaRef.current.value
-      const charCount = text.length
-
-      // Update character limit state - using character count (100-1000 characters)
-      setMeetsCharLimit(charCount >= 100 && charCount <= 1000)
-
-      // Check if the content is already enhanced
+      if (!textareaRef.current) return;
+      const text = textareaRef.current.value;
+      const charCount = text.length;
+      setMeetsCharLimit(charCount >= 100 && charCount <= 1000);
       if (enhancedText !== null) {
-        setIsAlreadyEnhanced(text === enhancedText)
+        setIsAlreadyEnhanced(text === enhancedText);
       }
-    }
-
-    // Initial check
-    checkCharLimit()
-
-    // Set up event listener for input changes
-    const textarea = textareaRef.current
+    };
+    checkCharLimit();
+    const textarea = textareaRef.current;
     if (textarea) {
-      textarea.addEventListener("input", checkCharLimit)
-      return () => textarea.removeEventListener("input", checkCharLimit)
+      textarea.addEventListener("input", checkCharLimit);
+      return () => textarea.removeEventListener("input", checkCharLimit);
     }
-  }, [textareaRef, enhancedText])
+  }, [textareaRef, enhancedText]);
 
-  // Notify parent component about enhancing state changes
-  useEffect(() => {
-    if (onEnhancingStateChange) {
-      onEnhancingStateChange(isEnhancing)
-    }
-  }, [isEnhancing, onEnhancingStateChange])
+  // Enhance shimmer flash: only add a class to textarea, no overlay/duplicate text!
+  const flashShimmer = (el: HTMLTextAreaElement) => {
+    el.classList.add("shimmer-flash");
+    setTimeout(() => el.classList.remove("shimmer-flash"), 1100);
+  };
 
-  // Sun-kissed silver metal flash animation with enhanced effect
-  const silverFlashAnimation = (element: HTMLTextAreaElement) => {
-    const originalText = element.value
-
-    // Apply active state gradient to the form with specific colors (#042f2e and #1e988a)
-    const form = element.closest("form")
-    if (form) {
-      form.classList.add("ai-generating")
-    }
-
-    // Save original scroll position
-    const originalScrollTop = element.scrollTop
-
-    // Create a container for the animation that matches the textarea exactly
-    const container = document.createElement("div")
-    container.className = "silver-typewriter-container"
-    container.style.position = "absolute"
-    container.style.top = "0"
-    container.style.left = "0"
-    container.style.right = "0"
-    container.style.bottom = "0"
-    container.style.padding = window.getComputedStyle(element).padding
-    container.style.backgroundColor = "#141415"
-    container.style.color = "white"
-    container.style.overflow = "auto"
-    container.style.borderRadius = "inherit"
-    container.style.fontSize = window.getComputedStyle(element).fontSize
-    container.style.fontFamily = window.getComputedStyle(element).fontFamily
-    container.style.lineHeight = window.getComputedStyle(element).lineHeight
-
-    // Insert the container
-    element.parentNode?.insertBefore(container, element.nextSibling)
-
-    // Break text into spans for more precise animation control
-    const wrappedText = originalText
-      .split("\n")
-      .map((line) => `<div>${line || " "}</div>`)
-      .join("")
-
-    // Add the original text with enhanced silver flash effect
-    container.innerHTML = `<div class="sun-kissed-silver">${wrappedText}</div>`
-
-    // Match the scroll position
-    container.scrollTop = originalScrollTop
-
-    // Ensure bottom content is visible
-    setTimeout(() => {
-      container.scrollTop = container.scrollHeight
-    }, 50)
-
-    // After the flash animation completes, start the typewriter effect
-    setTimeout(() => {
-      silverTypewriterEffect(originalText, element, container)
-    }, 800) // Wait for flash animation to complete
-  }
-
+  // --- Typewriter effect and AI stream logic from previous code ---
   // Silver typewriter effect - improved for smoother animation and scrolling
-  const silverTypewriterEffect = (text: string, element: HTMLTextAreaElement, container: HTMLDivElement) => {
+  const silverTypewriterEffect = (text: string, element: HTMLTextAreaElement) => {
     // Get enhanced text from API with validation
     const enhancePromptAsync = async (prompt: string) => {
       try {
@@ -126,259 +61,157 @@ export default function EnhancedButton({
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ prompt }),
-        })
-
+        });
         if (!response.ok) {
-          const errorData = await response.json()
-          throw new Error(errorData.error || "Failed to enhance prompt")
+          const errorData = await response.json();
+          throw new Error(errorData.error || "Failed to enhance prompt");
         }
-
-        const data = await response.json()
-        return data.enhancedPrompt
+        const data = await response.json();
+        return data.enhancedPrompt;
       } catch (error) {
-        console.error("Error:", error)
-        return fallbackEnhancePrompt(prompt)
+        console.error("Error:", error);
+        return fallbackEnhancePrompt(prompt);
       }
-    }
+    };
 
-    // Start streaming effect with smoother animation
-    let typedText = ""
-    let enhancedText = ""
-    let isStreaming = false
-    let charIndex = 0
-    const streamSpeed = 12 // Slightly faster for better UX
-    let lastNewlineIndex = -1 // Track last newline for better line-by-line rendering
+    let typedText = "";
+    let enhancedText = "";
+    let isStreaming = false;
+    let charIndex = 0;
+    const streamSpeed = 12;
+    let lastNewlineIndex = -1;
 
-    // Start the API call
     enhancePromptAsync(text).then((result) => {
-      enhancedText = result
-      setEnhancedText(result) // Store the enhanced text for future comparison
+      enhancedText = result;
+      setEnhancedText(result);
       if (!isStreaming) {
-        startStreaming()
+        startStreaming();
       }
-    })
+    });
 
     function startStreaming() {
-      isStreaming = true
-      streamNextChar()
+      isStreaming = true;
+      streamNextChar();
     }
 
     function streamNextChar() {
       if (charIndex < enhancedText.length) {
-        const currentChar = enhancedText.charAt(charIndex)
-        typedText += currentChar
-
-        // Check if we just added a newline character
-        const isNewline = currentChar === "\n"
+        const currentChar = enhancedText.charAt(charIndex);
+        typedText += currentChar;
+        const isNewline = currentChar === "\n";
         if (isNewline) {
-          lastNewlineIndex = charIndex
+          lastNewlineIndex = charIndex;
         }
-
-        // Format text with appropriate line breaks for HTML display
-        const formattedText = typedText
-          .split("\n")
-          .map((line) => `<div>${line || " "}</div>`)
-          .join("")
-
-        // Update the container with the typed text (no cursor)
-        container.innerHTML = formattedText
-
-        // Update the actual textarea value (hidden behind the container)
-        element.value = typedText
-
+        // Update the actual textarea value
+        element.value = typedText;
         // Trigger input event to resize textarea and maintain proper sizing
-        const event = new Event("input", { bubbles: true })
-        element.dispatchEvent(event)
-
+        const event = new Event("input", { bubbles: true });
+        element.dispatchEvent(event);
         // Smooth auto-scroll to bottom
-        const shouldScrollToBottom =
-          // Always scroll if we're near the bottom already
-          container.scrollHeight - container.scrollTop - container.clientHeight < 50 ||
-          // Always scroll on newline
-          isNewline ||
-          // Always scroll at the end
-          charIndex === enhancedText.length - 1
-
-        if (shouldScrollToBottom) {
-          // Smooth scroll to bottom
-          container.scrollTo({
-            top: container.scrollHeight,
-            behavior: "smooth",
-          })
-          element.scrollTo({
-            top: element.scrollHeight,
-            behavior: "smooth",
-          })
-        }
-
-        charIndex++
-
-        // Slight randomization for more natural typing feel
-        const randomVariation = Math.random() * 5 - 2.5 // -2.5 to +2.5ms
-        const adjustedSpeed = streamSpeed + randomVariation
-
-        // Slight pause after periods and newlines
-        const delay = isNewline || enhancedText.charAt(charIndex - 1) === "." ? adjustedSpeed * 3 : adjustedSpeed
-
-        setTimeout(streamNextChar, delay)
+        element.scrollTo({
+          top: element.scrollHeight,
+          behavior: "smooth",
+        });
+        charIndex++;
+        const randomVariation = Math.random() * 5 - 2.5;
+        const adjustedSpeed = streamSpeed + randomVariation;
+        const delay = isNewline || enhancedText.charAt(charIndex - 1) === "." ? adjustedSpeed * 3 : adjustedSpeed;
+        setTimeout(streamNextChar, delay);
       } else {
-        // Typing complete, remove the container and show the textarea
         setTimeout(() => {
-          container.remove()
-          element.value = enhancedText
-
-          // Trigger input event one last time
-          const event = new Event("input", { bubbles: true })
-          element.dispatchEvent(event)
-
-          // Final scroll to bottom
-          element.scrollTop = element.scrollHeight
-
-          // Remove active state gradient
-          const form = element.closest("form")
-          if (form) {
-            form.classList.remove("ai-generating")
-          }
-
-          setIsEnhancing(false)
-          setIsAlreadyEnhanced(true)
-        }, 300)
+          element.value = enhancedText;
+          const event = new Event("input", { bubbles: true });
+          element.dispatchEvent(event);
+          element.scrollTop = element.scrollHeight;
+          setIsEnhancing(false);
+          setIsAlreadyEnhanced(true);
+        }, 300);
       }
     }
-  }
-
-  const handleEnhance = async () => {
-    if (!hasContent || isEnhancing || !meetsCharLimit || isAlreadyEnhanced) return
-
-    // Show auth modal when enhance button is clicked
-    onShowAuthModal()
-    return
-
-    // // The code below will not execute due to the return above
-    // // It's kept for reference in case we want to change the behavior later
-
-    // const textarea = textareaRef.current
-    // if (!textarea) return
-
-    // // Validate content length one more time before proceeding
-    // const charCount = textarea.value.length
-    // if (charCount < 100 || charCount > 1000) {
-    //   return
-    // }
-
-    // // Start animation
-    // setIsEnhancing(true)
-    // setIsAnimating(true)
-
-    // // Apply sparkle animation to the button
-    // if (buttonRef.current) {
-    //   buttonRef.current.classList.add("enhance-button-sparkle")
-    // }
-
-    // // Start the silver flash animation
-    // silverFlashAnimation(textarea)
-
-    // // End button animation after the enhancement is complete (handled in the typewriter effect)
-    // setTimeout(() => {
-    //   setIsAnimating(false)
-
-    //   // Remove sparkle after animation completes
-    //   if (buttonRef.current) {
-    //     buttonRef.current.classList.remove("enhance-button-sparkle")
-    //   }
-    // }, 4000) // Longer duration to match the full enhancement process
-  }
+  };
 
   // Fallback function to enhance prompts without API
   const fallbackEnhancePrompt = (prompt: string): string => {
-    // Convert to lowercase and capitalize first letter of sentences
-    const formattedPrompt = prompt.toLowerCase().replace(/(^\s*\w|[.!?]\s*\w)/g, (c) => c.toUpperCase())
-
-    // Add structure - more concise
-    let enhanced = formattedPrompt.trim()
-
-    // Extract main topic
-    const topics = ["website", "app", "dashboard", "stats", "ai", "personal"]
-    const foundTopic = topics.find((topic) => enhanced.includes(topic)) || ""
-
-    // Create a more concise enhanced prompt
+    const formattedPrompt = prompt.toLowerCase().replace(/(^\s*\w|[.!?]\s*\w)/g, (c) => c.toUpperCase());
+    let enhanced = formattedPrompt.trim();
+    const topics = ["website", "app", "dashboard", "stats", "ai", "personal"];
+    const foundTopic = topics.find((topic) => enhanced.includes(topic)) || "";
     if (foundTopic) {
-      enhanced = `Create a ${foundTopic} with the following features:\n\n`
-
-      // Add 3-4 key points based on the topic
-      const points = []
-
+      enhanced = `Create a ${foundTopic} with the following features:\n\n`;
+      const points = [];
       if (foundTopic === "website") {
-        points.push("Responsive design for all devices")
-        points.push("Clean, intuitive user interface")
-        points.push("Fast loading and performance")
+        points.push("Responsive design for all devices");
+        points.push("Clean, intuitive user interface");
+        points.push("Fast loading and performance");
       } else if (foundTopic === "app") {
-        points.push("User-friendly mobile interface")
-        points.push("Core functionality: " + prompt.split(" ").slice(0, 5).join(" "))
-        points.push("Offline capabilities")
+        points.push("User-friendly mobile interface");
+        points.push("Core functionality: " + prompt.split(" ").slice(0, 5).join(" "));
+        points.push("Offline capabilities");
       } else if (foundTopic.includes("stats") || foundTopic.includes("dashboard")) {
-        points.push("Key metrics visualization")
-        points.push("Data filtering options")
-        points.push("Regular data updates")
+        points.push("Key metrics visualization");
+        points.push("Data filtering options");
+        points.push("Regular data updates");
       } else if (foundTopic.includes("ai")) {
-        points.push("AI-powered analysis")
-        points.push("Personalized recommendations")
-        points.push("Learning capabilities")
+        points.push("AI-powered analysis");
+        points.push("Personalized recommendations");
+        points.push("Learning capabilities");
       } else if (foundTopic.includes("personal")) {
-        points.push("Privacy and security")
-        points.push("Customization options")
-        points.push("Personal data management")
+        points.push("Privacy and security");
+        points.push("Customization options");
+        points.push("Personal data management");
       }
-
-      // Add the points to the enhanced prompt
       points.forEach((point, index) => {
-        enhanced += `${index + 1}. ${point}\n`
-      })
-
-      // Add a brief closing
-      enhanced += "\nInclude design and implementation details."
+        enhanced += `${index + 1}. ${point}\n`;
+      });
+      enhanced += "\nInclude design and implementation details.";
     } else {
-      // Generic enhancement
-      enhanced = `Develop ${enhanced} with these key features:\n\n`
-      enhanced += "1. User-friendly interface\n"
-      enhanced += "2. Core functionality\n"
-      enhanced += "3. Performance optimization\n"
-
-      enhanced += "\nProvide implementation approach."
+      enhanced = `Develop ${enhanced} with these key features:\n\n`;
+      enhanced += "1. User-friendly interface\n";
+      enhanced += "2. Core functionality\n";
+      enhanced += "3. Performance optimization\n";
+      enhanced += "\nProvide implementation approach.";
     }
+    return enhanced;
+  };
 
-    return enhanced
-  }
+  // Main Enhance logic
+  const handleEnhance = async () => {
+    if (!hasContent || isEnhancing || !meetsCharLimit || isAlreadyEnhanced) return;
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    setIsEnhancing(true);
+    setIsAnimating(true);
+    if (buttonRef.current) {
+      buttonRef.current.classList.add("enhance-button-sparkle");
+    }
+    // Flash shimmer ONLY on the textarea (no overlays, no duplicate divs)
+    flashShimmer(textarea);
+    // --- Typewriter effect and AI stream logic ---
+    silverTypewriterEffect(textarea.value, textarea);
+    // End button animation after the enhancement is complete (handled in the typewriter effect)
+    setTimeout(() => {
+      setIsAnimating(false);
+      if (buttonRef.current) buttonRef.current.classList.remove("enhance-button-sparkle");
+    }, 4000);
+  };
 
-  // Get tooltip content based on current state
+  // Tooltip logic (unchanged)
   const getTooltipContent = () => {
-    if (!hasContent) {
-      return "Enter some text to enhance"
-    }
-
-    if (isEnhancing) {
-      return "Enhancing your prompt..."
-    }
-
-    if (isAlreadyEnhanced) {
-      return "This prompt is already enhanced"
-    }
-
+    if (!hasContent) return "Enter some text to enhance";
+    if (isEnhancing) return "Enhancing your prompt...";
+    if (isAlreadyEnhanced) return "This prompt is already enhanced";
     if (!meetsCharLimit) {
-      const text = textareaRef.current?.value || ""
-      const charCount = text.length
-
-      if (charCount < 100) {
-        return "Prompt is too short. Min length is 100 characters."
-      }
-
-      if (charCount > 1000) {
-        return "Prompt is too long. Max length is 1000 characters."
-      }
+      const text = textareaRef.current?.value || "";
+      const charCount = text.length;
+      if (charCount < 100) return "Prompt is too short. Min length is 100 characters.";
+      if (charCount > 1000) return "Prompt is too long. Max length is 1000 characters.";
     }
+    return "Click to enhance prompt";
+  };
 
-    return "Click to enhance prompt"
-  }
+  useEffect(() => {
+    if (onEnhancingStateChange) onEnhancingStateChange(isEnhancing);
+  }, [isEnhancing, onEnhancingStateChange]);
 
   return (
     <TooltipProvider>
@@ -387,7 +220,7 @@ export default function EnhancedButton({
           <button
             ref={buttonRef}
             onClick={handleEnhance}
-            className={`focus-visible:ring-offset-background inline-flex shrink-0 cursor-pointer select-none items-center justify-center gap-1.5 whitespace-nowrap text-nowrap border font-medium outline-none ring-blue-600 transition-[background,border-color,color,transform,opacity,box-shadow] focus-visible:ring-2 focus-visible:ring-offset-1 disabled:pointer-events-none disabled:cursor-not-allowed disabled:ring-0 has-[:focus-visible]:ring-2 [&>svg]:pointer-events-none [&>svg]:size-4 [&_svg]:shrink-0 hover:bg-gray-200 dark:hover:bg-gray-800 focus-visible:bg-gray-200 dark:focus-visible:bg-gray-800 border-transparent bg-transparent text-gray-900 dark:text-white hover:border-transparent focus:border-transparent focus-visible:border-transparent disabled:border-transparent disabled:bg-transparent disabled:text-gray-400 px-3 text-sm has-[>kbd]:gap-2 has-[>svg]:px-2 has-[>kbd]:pr-[6px] group size-7 rounded-md ${
+            className={`focus-visible:ring-offset-background inline-flex shrink-0 cursor-pointer select-none items-center justify-center gap-1.5 whitespace-nowrap text-nowrap border font-medium outline-none ring-blue-600 transition-[background,border-color,color,transform,opacity,box-shadow] focus-visible:ring-2 focus-visible:ring-offset-1 disabled:pointer-events-none disabled:cursor-not-allowed disabled:ring-0 [&>svg]:pointer-events-none [&>svg]:size-4 [&_svg]:shrink-0 hover:bg-gray-200 dark:hover:bg-gray-800 focus-visible:bg-gray-200 dark:focus-visible:bg-gray-800 border-transparent bg-transparent text-gray-900 dark:text-white hover:border-transparent focus:border-transparent focus-visible:border-transparent disabled:border-transparent disabled:bg-transparent disabled:text-gray-400 px-3 text-sm has-[>kbd]:gap-2 has-[>svg]:px-2 has-[>kbd]:pr-[6px] group size-7 rounded-md ${
               isEnhancing ? "enhance-button-sparkle" : ""
             }`}
             data-loading={isEnhancing ? "true" : "false"}
@@ -395,6 +228,7 @@ export default function EnhancedButton({
             type="button"
             aria-label="Enhance prompt"
           >
+            {/* SVG Icon unchanged */}
             <svg
               width="16"
               height="16"
@@ -436,5 +270,5 @@ export default function EnhancedButton({
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
-  )
+  );
 }

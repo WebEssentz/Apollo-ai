@@ -36,7 +36,7 @@ export async function POST(request: Request) {
     const ai = new GoogleGenAI({ apiKey })
 
     // Use a more reliable model version
-    const modelName = "gemini-2.5-pro-preview-03-25" // Using a more stable model
+    const modelName = "gemini-2.0-flash" // Using a more stable model
 
     // Create the prompt for Gemini - UPDATED FOR CHARACTER LIMITS
     const geminiPrompt = `

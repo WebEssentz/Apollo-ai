@@ -1,5 +1,5 @@
 "use client";
-import React, { useRef, useState, forwardRef } from "react";
+import React, { useRef, useState, forwardRef, useImperativeHandle } from "react";
 import "./animated-textarea.css";
 
 interface AnimatedTextAreaProps {
@@ -15,12 +15,13 @@ interface AnimatedTextAreaProps {
   maxLength?: number;
   required?: boolean;
   disabled?: boolean;
-  children?: React.ReactNode; // Add support for icon buttons as children
+  children?: React.ReactNode;
+  dataEnhancing?: boolean;
 }
 
 const AnimatedTextArea = forwardRef<HTMLTextAreaElement, AnimatedTextAreaProps>(
   (
-    {      
+    {
       placeholder = "",
       className = "",
       id = "chat-main-textarea",
@@ -33,7 +34,8 @@ const AnimatedTextArea = forwardRef<HTMLTextAreaElement, AnimatedTextAreaProps>(
       maxLength,
       required = false,
       disabled = false,
-      children
+      children,
+      dataEnhancing = false,
     },
     ref
   ) => {
@@ -41,8 +43,7 @@ const AnimatedTextArea = forwardRef<HTMLTextAreaElement, AnimatedTextAreaProps>(
     const [isAnimatingOut, setIsAnimatingOut] = useState(false);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-    // Allow parent ref
-    React.useImperativeHandle(ref, () => textareaRef.current as HTMLTextAreaElement);
+    useImperativeHandle(ref, () => textareaRef.current as HTMLTextAreaElement);
 
     const handleFocus = () => {
       setIsAnimatingOut(false);
@@ -57,6 +58,7 @@ const AnimatedTextArea = forwardRef<HTMLTextAreaElement, AnimatedTextAreaProps>(
       }, 1000);
     };
 
+    // No overlays, no duplicate text, shimmer is only a background animation on the textarea
     return (
       <div className={`animated-border-textarea-container ${isFocused ? "focused" : ""} ${isAnimatingOut ? "animating-out" : ""}`}>
         <div className="flex flex-col w-full">
@@ -79,16 +81,17 @@ const AnimatedTextArea = forwardRef<HTMLTextAreaElement, AnimatedTextAreaProps>(
             maxLength={maxLength}
             required={required}
             disabled={disabled}
+            data-enhancing={dataEnhancing}
             className={`animated-border-textarea ${className}`}
             style={{
               resize: "none",
-              minHeight: "32px", // smaller default
+              minHeight: "32px",
               maxHeight: "384px",
-              paddingBottom: "0.25rem" // tighter
+              paddingBottom: "0.25rem"
             }}
           />
           {children && (
-            <div className="flex items-center gap-1 justify-end px-1 pb-1 pt-0.5 min-h-0 h-8">
+            <div className="animated-border-textarea-children flex items-center gap-1 justify-end px-1 pb-1 pt-0.5 min-h-0 h-8">
               {children}
             </div>
           )}
@@ -97,6 +100,7 @@ const AnimatedTextArea = forwardRef<HTMLTextAreaElement, AnimatedTextAreaProps>(
     );
   }
 );
+
 AnimatedTextArea.displayName = "AnimatedTextArea";
 
 export default AnimatedTextArea;
