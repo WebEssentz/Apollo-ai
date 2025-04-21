@@ -19,6 +19,7 @@ interface AnimatedTextAreaProps {
   required?: boolean;
   disabled?: boolean;
   children?: React.ReactNode;
+  shimmerText?: string[]; // Add this new prop
 }
 
 const AnimatedTextArea = forwardRef<HTMLDivElement, AnimatedTextAreaProps>(
@@ -35,8 +36,10 @@ const AnimatedTextArea = forwardRef<HTMLDivElement, AnimatedTextAreaProps>(
     maxLength,
     required = false,
     disabled = false,
-    children
-  }, ref) => {    const [isFocused, setIsFocused] = useState(false);
+    children,
+    shimmerText = ["HOW TOP COMPANIES DO IT"] // Default to the text mentioned in the request
+  }, ref) => {
+    const [isFocused, setIsFocused] = useState(false);
     const [isAnimatingOut, setIsAnimatingOut] = useState(false);
     const [isShimmering, setIsShimmering] = useState(false);    
     const [exitDirection, setExitDirection] = useState<'left' | 'right' | 'top' | 'bottom'>('right');
@@ -102,7 +105,8 @@ const AnimatedTextArea = forwardRef<HTMLDivElement, AnimatedTextAreaProps>(
             onChange={handleChange}
             onKeyDown={onKeyDown}
             disabled={disabled}
-            isShimmering={isShimmering}
+            shimmer={isShimmering}
+            shimmerText={shimmerText} // Pass the shimmerText prop
             className={`${className} ${children ? 'mb-0 pb-1 border-b-0 rounded-b-none' : ''}`}
           />          
           {children && ( 

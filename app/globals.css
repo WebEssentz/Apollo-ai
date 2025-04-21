@@ -2,6 +2,20 @@
 @tailwind components;
 @tailwind utilities;
 
+
+::selection {
+  background-color: #042F2E;
+  background: #042F2E;
+  color: #27BCCA;
+}
+
+::-moz-selection {
+  background-color: #042F2E;
+  background: #042F2E;
+  color: #27BCCA;
+}
+
+
 /* ===== Custom Animations ===== */
 @keyframes fadeIn {
   from { opacity: 0; }

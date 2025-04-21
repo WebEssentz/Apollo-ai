@@ -10,7 +10,7 @@
   flex-direction: column;
 }
 
-[contenteditable=true]:empty:before {
+[contenteditable="true"]:empty:before {
   content: attr(data-placeholder);
   color: rgba(255, 255, 255, 0.5);
   pointer-events: none;
@@ -19,32 +19,42 @@
   top: 12px;
 }
 
-
-
 /* Silvery shimmer through the TEXT itself (not just background) */
 .silvery-shimmer-text {
-  background: linear-gradient(
-    90deg,
-    #ffffff 0%,
-    #e0e0e0 20%,
-    #ffffff 40%,
-    #e0e0e0 60%,
-    #ffffff 80%,
-    #e0e0e0 100%
-  );  background-size: 200% auto;
+  background: linear-gradient(90deg, #ffffff 0%, #e0e0e0 20%, #ffffff 40%, #e0e0e0 60%, #ffffff 80%, #e0e0e0 100%);
+  background-size: 200% auto;
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
   -webkit-text-fill-color: transparent;
   animation: shimmer-bg-move 1.5s ease-in-out infinite;
+  display: inline-block; /* Make sure it only applies to the text span */
+  font-weight: 600; /* Make the text slightly bolder for better effect */
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.1); /* Subtle glow */
 }
 
+/* Make the animation smoother */
 @keyframes shimmer-bg-move {
   0% {
     background-position: 200% 50%;
   }
   100% {
     background-position: -200% 50%;
+  }
+}
+
+/* Add a subtle pulse effect to enhance the shimmer */
+.silvery-shimmer-text {
+  animation: shimmer-bg-move 1.5s ease-in-out infinite, pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
   }
 }
 
@@ -60,7 +70,8 @@
   font-family: inherit;
   font-size: inherit;
   line-height: 1.5;
-  transition: height 0.2s ease;  min-height: 32px;
+  transition: height 0.2s ease;
+  min-height: 32px;
   max-height: 65vh;
   padding-bottom: 0.25rem;
   white-space: pre-wrap;

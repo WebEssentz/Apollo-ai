@@ -1,106 +1,115 @@
-"use client";
-import Image from "next/image";
-import Link from "next/link";
-import Authentication from "./_components/Authentication";
-import EnhancedButton from "./_components/EnhancedButton";
-import { Button } from "@/components/ui/button";
-import { useAuthContext } from "./provider";
-import { useEffect, useState, useRef } from "react";
-import { useIsMobile } from "../hooks/use-mobile";
-import AuthModal from "./_components/AuthModal";
-import AnimatedTextArea from "./AnimatedTextArea";
+"use client"
+
+// React and Next.js imports
+import type React from "react"
+import Image from "next/image"
+import Link from "next/link"
+import { useEffect, useState, useRef } from "react"
+
+// Components imports
+import { Button } from "@/components/ui/button"
+import Authentication from "./_components/Authentication"
+import EnhancedButton from "./_components/EnhancedButton"
+import AuthModal from "./_components/AuthModal"
+import AnimatedTextArea from "./AnimatedTextArea"
+
+// Hooks and Context imports
+import { useAuthContext } from "./provider"
+import { useIsMobile } from "../hooks/use-mobile"
 
 export default function Home() {
-  const user = useAuthContext();
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [hasContent, setHasContent] = useState(false);
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const textareaRef = useRef<HTMLDivElement>(null); // Updated for SilverTextEditor/AnimatedTextArea
-  const isMobile = useIsMobile();
-  const [charCount, setCharCount] = useState(0);
-  const formRef = useRef<HTMLFormElement>(null);
-  const [isEnhancing, setIsEnhancing] = useState(false);
+  const user = useAuthContext()
+  const [isScrolled, setIsScrolled] = useState(false)
+  const [hasContent, setHasContent] = useState(false)
+  const [showAuthModal, setShowAuthModal] = useState(false)
+  const textareaRef = useRef<HTMLDivElement>(null) // Updated for SilverTextEditor/AnimatedTextArea
+  const isMobile = useIsMobile()
+  const [charCount, setCharCount] = useState(0)
+  const formRef = useRef<HTMLFormElement>(null)
+  const [isEnhancing, setIsEnhancing] = useState(false)
+  const [shimmerTexts, setShimmerTexts] = useState<string[]>(["HOW TOP COMPANIES DO IT"])
 
   useEffect(() => {
+    if (typeof window === "undefined") return; // Prevent SSR window error
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+      setIsScrolled(window.scrollY > 10)
+    }
+    window.addEventListener("scroll", handleScroll)
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [])
 
   useEffect(() => {
-    const form = formRef.current;
-    const textarea = textareaRef.current;
-    if (!form || !textarea) return;
+    const form = formRef.current
+    const textarea = textareaRef.current
+    if (!form || !textarea) return
     const handleFocus = (e: FocusEvent) => {
       if (e.target === textarea) {
-        form.classList.add("water-rush-in");
-        form.classList.remove("blur-animation");
+        form.classList.add("water-rush-in")
+        form.classList.remove("blur-animation")
       }
-    };
+    }
     const handleBlur = (e: FocusEvent) => {
       if (e.target === textarea) {
-        form.classList.remove("water-rush-in");
-        form.classList.add("blur-animation");
+        form.classList.remove("water-rush-in")
+        form.classList.add("blur-animation")
         setTimeout(() => {
-          form.classList.remove("blur-animation");
-        }, 3500);
+          form.classList.remove("blur-animation")
+        }, 3500)
       }
-    };
-    textarea.addEventListener("focus", handleFocus as any);
-    textarea.addEventListener("blur", handleBlur as any);
+    }
+    textarea.addEventListener("focus", handleFocus as any)
+    textarea.addEventListener("blur", handleBlur as any)
     return () => {
-      textarea.removeEventListener("focus", handleFocus as any);
-      textarea.removeEventListener("blur", handleBlur as any);
-    };
-  }, []);
+      textarea.removeEventListener("focus", handleFocus as any)
+      textarea.removeEventListener("blur", handleBlur as any)
+    }
+  }, [])
 
   // Auto-resize textarea based on content and scroll to bottom
   const handleTextareaInput = (e: any) => {
-    const textarea = textareaRef.current;
+    const textarea = textareaRef.current
     if (textarea) {
       // Save current scroll position and selection
-      const scrollTop = textarea.scrollTop;
+      const scrollTop = textarea.scrollTop
       // Temporarily reset height to calculate proper scrollHeight
-      (textarea as any).style.height = "auto";
+      ;(textarea as any).style.height = "auto"
       // Calculate new height with max height limit
-      const maxHeight = 200;
-      const newHeight = Math.min(textarea.scrollHeight, maxHeight);
-      (textarea as any).style.height = `${newHeight}px`;
+      const maxHeight = 200
+      const newHeight = Math.min(textarea.scrollHeight, maxHeight)
+      ;(textarea as any).style.height = `${newHeight}px`
       // If content exceeds max height, ensure proper scrolling
       if (textarea.scrollHeight > maxHeight) {
-        (textarea as any).style.overflowY = "auto";
+        ;(textarea as any).style.overflowY = "auto"
         // If cursor is at the end, scroll to bottom
         if ((textarea as any).selectionEnd === (textarea.textContent ? textarea.textContent.length : 0)) {
-          textarea.scrollTop = textarea.scrollHeight;
+          textarea.scrollTop = textarea.scrollHeight
         } else {
-          textarea.scrollTop = scrollTop;
+          textarea.scrollTop = scrollTop
         }
       } else {
-        (textarea as any).style.overflowY = "hidden";
+        ;(textarea as any).style.overflowY = "hidden"
       }
-      setHasContent((textarea.textContent ? textarea.textContent.length : 0) > 0);
+      setHasContent((textarea.textContent ? textarea.textContent.length : 0) > 0)
     }
-  };
+  }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey && !isEnhancing) {
-      e.preventDefault();
-      setShowAuthModal(true);
+      e.preventDefault()
+      setShowAuthModal(true)
     }
-  };
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
     if (!isEnhancing) {
-      setShowAuthModal(true);
+      setShowAuthModal(true)
     }
-  };
+  }
 
   const handleEnhancingStateChange = (enhancingState: boolean) => {
-    setIsEnhancing(enhancingState);
-  };
+    setIsEnhancing(enhancingState)
+  }
 
   return (
     <div className="min-h-screen-patched bg-background flex w-full">
@@ -157,7 +166,9 @@ export default function Home() {
               </div>
               {/* Enhanced Textarea section */}
               <div className="mt-6 w-full max-w-3xl px-4 sm:px-4 md:px-6 @container/textarea">
-                <div className={`group/form-container content-center relative mx-auto w-full ${isMobile ? "max-w-full px-0" : "max-w-[49rem] px-2 sm:px-0"}`}>
+                <div
+                  className={`group/form-container content-center relative mx-auto w-full ${isMobile ? "max-w-full px-0" : "max-w-[49rem] px-2 sm:px-0"}`}
+                >
                   <div id="prompt-actions"></div>
                   <div className="relative z-10 flex w-full flex-col">
                     <div className="rounded-xl">
@@ -177,14 +188,15 @@ export default function Home() {
                             placeholder="Ask Apollo to build…"
                             defaultValue={""}
                             onChange={(value: string) => {
-                              setHasContent(value.length > 0);
-                              setCharCount(value.length);
+                              setHasContent(value.length > 0)
+                              setCharCount(value.length)
                             }}
                             onInput={handleTextareaInput}
                             onKeyDown={handleKeyDown}
                             className={`${isMobile ? "font-light p-3 text-sm" : "font-normal p-4 text-base"}`}
                             required={false}
                             disabled={isEnhancing}
+                            shimmerText={shimmerTexts}
                           >
                             <div className="ml-auto flex items-center gap-1 min-h-0 h-8 px-1 pb-1 pt-0.5">
                               <EnhancedButton
@@ -192,6 +204,7 @@ export default function Home() {
                                 hasContent={hasContent}
                                 onEnhancingStateChange={handleEnhancingStateChange}
                                 onShowAuthModal={() => setShowAuthModal(true)}
+                                // Removed onShimmerChange to fix warning
                               />
                               <button
                                 type="button"
@@ -287,56 +300,191 @@ export default function Home() {
             </div>
             {/* Features Grid */}
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 items-center gap-2">
-              <a className="group flex flex-col justify-center hover:bg-gray-50 rounded-xl p-4 md:p-7 dark:hover:bg-neutral-800" href="#">
+              <a
+                className="group flex flex-col justify-center hover:bg-gray-50 rounded-xl p-4 md:p-7 dark:hover:bg-neutral-800"
+                href="#"
+              >
                 <div className="flex justify-center items-center size-12 bg-blue-600 rounded-xl">
-                  <svg className="flex-shrink-0 size-6 text-white" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="10" height="14" x="3" y="8" rx="2" /><path d="M5 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2h-2.4" /><path d="M8 18h.01" /></svg>
+                  <svg
+                    className="flex-shrink-0 size-6 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <rect width="10" height="14" x="3" y="8" rx="2" />
+                    <path d="M5 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2h-2.4" />
+                    <path d="M8 18h.01" />
+                  </svg>
                 </div>
-                <div className="mt-5">              <h3 className="text-lg font-semibold text-white group-hover:text-gray-400">25+ templates</h3>
+                <div className="mt-5">
+                  {" "}
+                  <h3 className="text-lg font-semibold text-white group-hover:text-gray-400">25+ templates</h3>
                   <p className="mt-1 text-neutral-400">Responsive, and mobile-first project on the web</p>
                   <span className="mt-2 inline-flex items-center gap-x-1.5 text-sm text-blue-500 decoration-2 group-hover:underline font-medium">
                     Learn more
-                    <svg className="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
+                    <svg
+                      className="flex-shrink-0 size-4"
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="m9 18 6-6-6-6" />
+                    </svg>
                   </span>
                 </div>
               </a>
 
-              <a className="group flex flex-col justify-center hover:bg-gray-50 rounded-xl p-4 md:p-7 dark:hover:bg-neutral-800" href="#">
+              <a
+                className="group flex flex-col justify-center hover:bg-gray-50 rounded-xl p-4 md:p-7 dark:hover:bg-neutral-800"
+                href="#"
+              >
                 <div className="flex justify-center items-center size-12 bg-blue-600 rounded-xl">
-                  <svg className="flex-shrink-0 size-6 text-white" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 7h-9" /><path d="M14 17H5" /><circle cx="17" cy="17" r="3" /><circle cx="7" cy="7" r="3" /></svg>
+                  <svg
+                    className="flex-shrink-0 size-6 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M20 7h-9" />
+                    <path d="M14 17H5" />
+                    <circle cx="17" cy="17" r="3" />
+                    <circle cx="7" cy="7" r="3" />
+                  </svg>
                 </div>
                 <div className="mt-5">
-                  <h3 className="group-hover:text-gray-600 text-lg font-semibold text-gray-800 dark:text-white dark:group-hover:text-gray-400">Customizable</h3>
-                  <p className="mt-1 text-gray-600 dark:text-neutral-400">Components are easily customized and extendable</p>
+                  <h3 className="group-hover:text-gray-600 text-lg font-semibold text-gray-800 dark:text-white dark:group-hover:text-gray-400">
+                    Customizable
+                  </h3>
+                  <p className="mt-1 text-gray-600 dark:text-neutral-400">
+                    Components are easily customized and extendable
+                  </p>
                   <span className="mt-2 inline-flex items-center gap-x-1.5 text-sm text-blue-600 decoration-2 group-hover:underline font-medium">
                     Learn more
-                    <svg className="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
+                    <svg
+                      className="flex-shrink-0 size-4"
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="m9 18 6-6-6-6" />
+                    </svg>
                   </span>
                 </div>
               </a>
-              <a className="group flex flex-col justify-center hover:bg-gray-50 rounded-xl p-4 md:p-7 dark:hover:bg-neutral-800" href="#">
+              <a
+                className="group flex flex-col justify-center hover:bg-gray-50 rounded-xl p-4 md:p-7 dark:hover:bg-neutral-800"
+                href="#"
+              >
                 <div className="flex justify-center items-center size-12 bg-blue-600 rounded-xl">
-                  <svg className="flex-shrink-0 size-6 text-white" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></svg>
+                  <svg
+                    className="flex-shrink-0 size-6 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+                  </svg>
                 </div>
                 <div className="mt-5">
-                  <h3 className="group-hover:text-gray-600 text-lg font-semibold text-gray-800 dark:text-white dark:group-hover:text-gray-400">Free to Use</h3>
-                  <p className="mt-1 text-gray-600 dark:text-neutral-400">Every component and plugin is well documented</p>
+                  <h3 className="group-hover:text-gray-600 text-lg font-semibold text-gray-800 dark:text-white dark:group-hover:text-gray-400">
+                    Free to Use
+                  </h3>
+                  <p className="mt-1 text-gray-600 dark:text-neutral-400">
+                    Every component and plugin is well documented
+                  </p>
                   <span className="mt-2 inline-flex items-center gap-x-1.5 text-sm text-blue-600 decoration-2 group-hover:underline font-medium">
                     Learn more
-                    <svg className="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
+                    <svg
+                      className="flex-shrink-0 size-4"
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="m9 18 6-6-6-6" />
+                    </svg>
                   </span>
                 </div>
               </a>
 
-              <a className="group flex flex-col justify-center hover:bg-gray-50 rounded-xl p-4 md:p-7 dark:hover:bg-neutral-800" href="#">
+              <a
+                className="group flex flex-col justify-center hover:bg-gray-50 rounded-xl p-4 md:p-7 dark:hover:bg-neutral-800"
+                href="#"
+              >
                 <div className="flex justify-center items-center size-12 bg-blue-600 rounded-xl">
-                  <svg className="flex-shrink-0 size-6 text-white" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4c0-1.1.9-2 2-2h8a2 2 0 0 1 2 2v5Z" /><path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1" /></svg>
+                  <svg
+                    className="flex-shrink-0 size-6 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4c0-1.1.9-2 2-2h8a2 2 0 0 1 2 2v5Z" />
+                    <path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1" />
+                  </svg>
                 </div>
                 <div className="mt-5">
-                  <h3 className="group-hover:text-gray-600 text-lg font-semibold text-gray-800 dark:text-white dark:group-hover:text-gray-400">24/7 Support</h3>
+                  <h3 className="group-hover:text-gray-600 text-lg font-semibold text-gray-800 dark:text-white dark:group-hover:text-gray-400">
+                    24/7 Support
+                  </h3>
                   <p className="mt-1 text-gray-600 dark:text-neutral-400">Contact us 24 hours a day, 7 days a week</p>
                   <span className="mt-2 inline-flex items-center gap-x-1.5 text-sm text-blue-600 decoration-2 group-hover:underline font-medium">
                     Learn more
-                    <svg className="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
+                    <svg
+                      className="flex-shrink-0 size-4"
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="m9 18 6-6-6-6" />
+                    </svg>
                   </span>
                 </div>
               </a>
@@ -357,5 +505,5 @@ export default function Home() {
       {/* Auth Modal */}
       <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
     </div>
-  );
+  )
 }

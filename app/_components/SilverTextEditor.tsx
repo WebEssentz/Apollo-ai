@@ -9,7 +9,8 @@ interface SilverTextEditorProps {
   onChange?: (value: string) => void;
   onKeyDown?: (e: React.KeyboardEvent) => void;
   disabled?: boolean;
-  isShimmering?: boolean;
+  shimmer?: boolean;
+  shimmerText?: string[]; // Add this new prop to specify which text should shimmer
   className?: string;
 }
 
@@ -21,7 +22,8 @@ const SilverTextEditor = forwardRef<HTMLDivElement, SilverTextEditorProps>(
     onChange,
     onKeyDown,
     disabled,
-    isShimmering,
+    shimmer = false,
+    shimmerText,
     className = '',
   }, ref) {// Store refs for cleanup
     const animationFrameRef = React.useRef<number | undefined>(undefined);
@@ -159,6 +161,25 @@ const SilverTextEditor = forwardRef<HTMLDivElement, SilverTextEditorProps>(
       }, 16); // Aligned with 60fps refresh rate
     };
 
+    function processTextWithShimmer(text: string, shimmerTexts: string[], isShimmering: boolean) {
+      if (!isShimmering || !shimmerTexts.length) return text;
+      
+      // Create a temporary div to work with the HTML content
+      const tempDiv = document.createElement('div');
+      tempDiv.textContent = text;
+      const content = tempDiv.textContent || '';
+      
+      // Replace each shimmer text with a span that has the shimmer class
+      let processedContent = content;
+      shimmerTexts.forEach(shimmerText => {
+        const regex = new RegExp(shimmerText, 'gi');
+        processedContent = processedContent.replace(regex, 
+          `<span class="silvery-shimmer-text">${shimmerText}</span>`);
+      });
+      
+      return <div dangerouslySetInnerHTML={{ __html: processedContent }} />;
+    }
+
     return (
       <div
         ref={ref}
@@ -169,8 +190,10 @@ const SilverTextEditor = forwardRef<HTMLDivElement, SilverTextEditorProps>(
         onKeyDown={onKeyDown}
         role="textbox"
         aria-multiline="true"
-        data-placeholder={placeholder}        
-        className={`silver-editable ${isShimmering ? "silvery-shimmer-text" : "text-white"} w-full px-4 py-3 bg-transparent outline-none whitespace-pre-wrap text-base leading-relaxed transition-colors duration-300 ${className}`}        style={{
+        data-placeholder={placeholder}
+        data-shimmer={shimmer}
+        className={`silver-editable ${shimmer ? "" : "text-white"} w-full px-4 py-3 bg-transparent outline-none whitespace-pre-wrap text-base leading-relaxed transition-colors duration-300 ${className}`}
+        style={{
           minHeight: '80px',
           maxHeight: `${Math.floor(window.innerHeight * 0.75)}px`,
           overflowX: 'hidden',
@@ -185,7 +208,9 @@ const SilverTextEditor = forwardRef<HTMLDivElement, SilverTextEditorProps>(
         }}
         suppressContentEditableWarning={true}
       >
-        {defaultValue}
+        {defaultValue && shimmerText && shimmerText.length > 0 
+          ? processTextWithShimmer(defaultValue, shimmerText, shimmer)
+          : defaultValue}
       </div>
     );
   }

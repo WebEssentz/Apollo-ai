@@ -169,21 +169,31 @@ export default function EnhancedButton({
       ? (textarea as any).value || ''
       : textarea.textContent || '';
     if (!text || typeof text !== "string" || text.trim().length === 0) return;
+    
+    // Trigger shimmer effect immediately
     if (onShimmerChange) onShimmerChange(true);
     setIsEnhancing(true);
     setIsAnimating(true);
     if (buttonRef.current) {
       buttonRef.current.classList.add("enhance-button-sparkle");
     }
-    // shimmer is now controlled by onShimmerChange
-    silverTypewriterEffect(text, textarea);    // Cleanup animations and effects
+    
+    // Apply shimmer effect to specific text
+    silverTypewriterEffect(text, textarea);
+    
+    // Keep shimmer effect active for a bit longer to make it more noticeable
+    const shimmerDuration = 2000; // 2 seconds
+    setTimeout(() => {
+      if (onShimmerChange) {
+        onShimmerChange(false);
+      }
+    }, shimmerDuration);
+    
+    // Cleanup animations and effects
     const cleanup = () => {
       setIsAnimating(false);
       if (buttonRef.current) {
         buttonRef.current.classList.remove("enhance-button-sparkle");
-      }
-      if (onShimmerChange) {
-        onShimmerChange(false);
       }
     };
 
