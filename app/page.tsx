@@ -4,7 +4,8 @@
 import type React from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useRef } from "react"
+import { Paperclip } from "lucide-react";
 
 // Components imports
 import { Button } from "@/components/ui/button"
@@ -12,10 +13,13 @@ import Authentication from "./_components/Authentication"
 import EnhancedButton from "./_components/EnhancedButton"
 import AuthModal from "./_components/AuthModal"
 import AnimatedTextArea from "./AnimatedTextArea"
+import { FileDropdownMenu } from "./_components/FileDropdownMenu";
+import { useState } from "react";
 
 // Hooks and Context imports
 import { useAuthContext } from "./provider"
 import { useIsMobile } from "../hooks/use-mobile"
+import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 
 export default function Home() {
   const user = useAuthContext()
@@ -28,6 +32,7 @@ export default function Home() {
   const formRef = useRef<HTMLFormElement>(null)
   const [isEnhancing, setIsEnhancing] = useState(false)
   const [shimmerTexts, setShimmerTexts] = useState<string[]>(["HOW TOP COMPANIES DO IT"])
+  const [showFileMenu, setShowFileMenu] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return; // Prevent SSR window error
@@ -110,6 +115,16 @@ export default function Home() {
   const handleEnhancingStateChange = (enhancingState: boolean) => {
     setIsEnhancing(enhancingState)
   }
+
+  const handleFileMenuSelect = (type: string) => {
+    setShowFileMenu(false);
+    if (type === "computer") {
+      document.getElementById('file-clip-input')?.click();
+    } else {
+      // Handle other integrations here
+      alert(`Selected: ${type}`);
+    }
+  };
 
   return (
     <div className="min-h-screen-patched bg-background flex w-full">
@@ -199,66 +214,88 @@ export default function Home() {
                             shimmerText={shimmerTexts}
                           >
                             <div className="ml-auto flex items-center gap-1 min-h-0 h-8 px-1 pb-1 pt-0.5">
-                              <EnhancedButton
-                                textareaRef={textareaRef as any}
-                                hasContent={hasContent}
-                                onEnhancingStateChange={handleEnhancingStateChange}
-                                onShowAuthModal={() => setShowAuthModal(true)}
-                                // Removed onShimmerChange to fix warning
-                              />
-                              <button
-                                type="button"
-                                className="focus-visible:ring-offset-background inline-flex shrink-0 cursor-pointer select-none items-center justify-center gap-1.5 whitespace-nowrap text-nowrap border font-medium outline-none ring-blue-600 transition-[background,border-color,color,transform,opacity,box-shadow] focus-visible:ring-2 focus-visible:ring-offset-1 [&>svg]:pointer-events-none [&>svg]:size-4 [&_svg]:shrink-0 border-transparent hover:border-transparent focus:border-transparent focus-visible:border-transparent px-3 text-sm has-[>kbd]:gap-2 has-[>svg]:px-2 has-[>kbd]:pr-[6px] focus:bg-muted hover:text-foreground ml-[-2px] h-7 w-7 rounded-md hover:bg-neutral-800 focus-visible:bg-neutral-800"
-                                onClick={() => setShowAuthModal(true)}
-                              >
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  width="16"
-                                  height="16"
-                                  viewBox="0 0 24 24"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  strokeWidth="2"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  className="size-4"
-                                >
-                                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                                  <polyline points="17 8 12 3 7 8" />
-                                  <line x1="12" y1="3" x2="12" y2="15" />
-                                </svg>
-                                <span className="sr-only">Upload File</span>
-                              </button>
-                              <button
-                                className={`focus-visible:ring-offset-[#141415] inline-flex shrink-0 cursor-pointer select-none items-center justify-center gap-1.5 whitespace-nowrap text-nowrap border font-medium outline-none ring-blue-600 transition-all duration-300 focus-visible:ring-2 focus-visible:ring-offset-1 [&>svg]:pointer-events-none [&>svg]:size-4 [&_svg]:shrink-0 px-3 text-sm has-[>kbd]:gap-2 has-[>svg]:px-2 has-[>kbd]:pr-[6px] ml-1 size-7 rounded-md 
-                                  ${
-                                    hasContent && !isEnhancing
-                                      ? "bg-white border-white hover:bg-gray-100 hover:border-gray-100 focus:bg-gray-100 focus:border-gray-100 scale-100 opacity-100"
-                                      : "bg-[#1f1f22] border-[#5d5d64] opacity-50 scale-95 cursor-not-allowed"
-                                  }`}
-                                disabled={!hasContent || isEnhancing}
-                                data-testid="prompt-form-send-button"
-                                type="submit"
-                              >
-                                <svg
-                                  data-testid="geist-icon"
-                                  height="16"
-                                  strokeLinejoin="round"
-                                  viewBox="0 0 16 16"
-                                  width="16"
-                                  className={`transition-colors duration-300 ${
-                                    hasContent && !isEnhancing ? "text-black" : "text-[#6b6b74]"
-                                  }`}
-                                >
-                                  <path
-                                    fillRule="evenodd"
-                                    clipRule="evenodd"
-                                    d="M8.70711 1.39644C8.31659 1.00592 7.68342 1.00592 7.2929 1.39644L2.21968 6.46966L1.68935 6.99999L2.75001 8.06065L3.28034 7.53032L7.25001 3.56065V14.25V15H8.75001V14.25V3.56065L12.7197 7.53032L13.25 8.06065L14.3107 6.99999L13.7803 6.46966L8.70711 1.39644Z"
-                                    fill="currentColor"
+                              <TooltipProvider>
+                                <EnhancedButton
+                                  textareaRef={textareaRef as any}
+                                  hasContent={hasContent}
+                                  onEnhancingStateChange={handleEnhancingStateChange}
+                                  onShowAuthModal={() => setShowAuthModal(true)}
+                                  // Removed onShimmerChange to fix warning
+                                />
+                                {/* File attachment button with tooltip */}
+                                <div className="relative">
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <button
+                                        type="button"
+                                        className="flex items-center justify-center rounded-md hover:bg-neutral-800 transition-colors text-white hover:text-blue-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                                        tabIndex={0}
+                                        aria-label="Attach file"
+                                        style={{ marginRight: '0.25rem' }}
+                                        onClick={() => setShowFileMenu((v) => !v)}
+                                      >
+                                        <Paperclip className="h-4 w-4" aria-hidden="true" />
+                                        <span className="sr-only">Attach file</span>
+                                      </button>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="top" className="bg-white text-black border border-neutral-200 shadow-lg rounded-md px-3 py-1 text-sm font-medium">Attach images, files etc.</TooltipContent>
+                                  </Tooltip>
+                                  {showFileMenu && (
+                                    <FileDropdownMenu onSelect={handleFileMenuSelect}>
+                                      <button
+                                        type="button"
+                                        className="flex items-center justify-center rounded-md hover:bg-neutral-800 transition-colors text-white hover:text-blue-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                                        tabIndex={0}
+                                        aria-label="Attach file"
+                                        style={{ marginRight: '0.25rem' }}
+                                      >
+                                        <Paperclip className="h-4 w-4" aria-hidden="true" />
+                                        <span className="sr-only">Attach file</span>
+                                      </button>
+                                    </FileDropdownMenu>
+                                  )}
+                                  <input
+                                    id="file-clip-input"
+                                    type="file"
+                                    className="hidden"
+                                    tabIndex={-1}
+                                    // onChange={handleFileClipChange}
                                   />
-                                </svg>
-                                <span className="sr-only">Send Message</span>
-                              </button>
+                                </div>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <button
+                                      className={`focus-visible:ring-offset-[#141415] inline-flex shrink-0 cursor-pointer select-none items-center justify-center gap-1.5 whitespace-nowrap text-nowrap border font-medium outline-none ring-blue-600 transition-all duration-300 focus-visible:ring-2 focus-visible:ring-offset-1 [&>svg]:pointer-events-none [&>svg]:size-4 [&_svg]:shrink-0 px-3 text-sm has-[>kbd]:gap-2 has-[>svg]:px-2 has-[>kbd]:pr-[6px] ml-1 size-7 rounded-md 
+                                      ${
+                                        hasContent && !isEnhancing
+                                          ? "bg-white border-white hover:bg-gray-100 hover:border-gray-100 focus:bg-gray-100 focus:border-gray-100 scale-100 opacity-100 text-black"
+                                          : "bg-[#1f1f22] border-[#5d5d64] opacity-50 scale-95 cursor-not-allowed text-[#6b6b74]"
+                                      }`}
+                                      disabled={!hasContent || isEnhancing}
+                                      data-testid="prompt-form-send-button"
+                                      type="submit"
+                                    >
+                                      <svg
+                                        data-testid="geist-icon"
+                                        height="16"
+                                        strokeLinejoin="round"
+                                        viewBox="0 0 16 16"
+                                        width="16"
+                                        className="transition-colors duration-300"
+                                      >
+                                        <path
+                                          fillRule="evenodd"
+                                          clipRule="evenodd"
+                                          d="M8.70711 1.39644C8.31659 1.00592 7.68342 1.00592 7.2929 1.39644L2.21968 6.46966L1.68935 6.99999L2.75001 8.06065L3.28034 7.53032L7.25001 3.56065V14.25V15H8.75001V14.25V3.56065L12.7197 7.53032L13.25 8.06065L14.3107 6.99999L13.7803 6.46966L8.70711 1.39644Z"
+                                          fill="currentColor"
+                                        />
+                                      </svg>
+                                      <span className="sr-only">Send Message</span>
+                                    </button>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top" className="bg-white text-black border border-neutral-200 shadow-lg rounded-md px-3 py-1 text-sm font-medium">Send message</TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
                             </div>
                           </AnimatedTextArea>
                         </div>

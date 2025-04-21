@@ -4,6 +4,7 @@ import "./animated-textarea.css";
 import SilverTextEditor from './_components/SilverTextEditor';
 import './_components/silver-text-editor.css';
 import './_components/button-container.css';
+import { Paperclip } from 'lucide-react';
 
 interface AnimatedTextAreaProps {
   placeholder?: string;
@@ -83,7 +84,8 @@ const AnimatedTextArea = forwardRef<HTMLDivElement, AnimatedTextAreaProps>(
       }
     };    // Add shimmer state and callback to children elements
     const enhancedChildren = React.Children.map(children, child => {
-      if (React.isValidElement(child)) {
+      if (React.isValidElement(child) && typeof child.type !== "string") {
+        // Only pass to custom components
         return React.cloneElement(child as React.ReactElement<any>, {
           isShimmering: isShimmering,
           onShimmerChange: (shimmer: boolean) => {

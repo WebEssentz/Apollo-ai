@@ -1,7 +1,7 @@
 "use client"
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
-import { CloudUpload, Loader2Icon, WandSparkles, X } from 'lucide-react'
+import { Paperclip, Loader2Icon, WandSparkles, X } from 'lucide-react'
 import Image from 'next/image'
 //@ts-ignore
 import uuid4 from "uuid4";
@@ -118,7 +118,7 @@ function ImageUpload() {
                 {!previewUrl ? <div className='p-7 border border-dashed rounded-md shadow-md
                 flex flex-col items-center justify-center
                 '>
-                    <CloudUpload className='h-10 w-10 text-primary' />
+                    <Paperclip className='h-10 w-10 text-primary' />
                     <h2 className='font-bold text-lg text-neutral-100'>Upload Image</h2>
 
                     <p className='text-neutral-400 mt-2'>Click Button Select Wireframe Image </p>
