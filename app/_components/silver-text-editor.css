@@ -1,14 +1,21 @@
 /* Silver Text Editor styles */
+.silver-editable {
+  transition: min-height 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow-y: auto;
+  max-height: 65vh;
+}
+
 [contenteditable=true]:empty:before {
   content: attr(data-placeholder);
   color: rgba(255, 255, 255, 0.5);
   pointer-events: none;
   position: absolute;
-  left: 12px;
+  left: 16px;
   top: 12px;
   text-align: left;
   font-size: inherit;
   font-family: inherit;
+  opacity: 0.6;
 }
 
 [contenteditable=true]:focus {
@@ -16,12 +23,15 @@
 }
 
 [contenteditable=true] {
-  color: #fff !important;
   caret-color: #fff !important;
   text-align: left !important;
   overflow-x: hidden !important;
   word-wrap: break-word !important;
   white-space: pre-wrap !important;
+}
+
+.text-white {
+  color: #fff !important;
 }
 
 /* Custom scrollbar styling */

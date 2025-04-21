@@ -25,26 +25,26 @@
 .silvery-shimmer-text {
   background: linear-gradient(
     90deg,
-    #fff 0%,
-    #e0e0e0 25%,
-    #bfc5ce 40%,
+    #ffffff 0%,
+    #e0e0e0 20%,
+    #ffffff 40%,
     #e0e0e0 60%,
-    #fff 100%
-  );
-  background-size: 200% 100%;
+    #ffffff 80%,
+    #e0e0e0 100%
+  );  background-size: 200% auto;
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
   -webkit-text-fill-color: transparent;
-  animation: shimmer-bg-move 1.1s linear;
+  animation: shimmer-bg-move 1.5s ease-in-out infinite;
 }
 
 @keyframes shimmer-bg-move {
   0% {
-    background-position: 200% 0;
+    background-position: 200% 50%;
   }
   100% {
-    background-position: -200% 0;
+    background-position: -200% 50%;
   }
 }
 
@@ -60,27 +60,31 @@
   font-family: inherit;
   font-size: inherit;
   line-height: 1.5;
-  transition: height 0.2s ease;
-  min-height: 32px;
-  max-height: 384px;
+  transition: height 0.2s ease;  min-height: 32px;
+  max-height: 65vh;
   padding-bottom: 0.25rem;
   white-space: pre-wrap;
   overflow-y: auto;
   text-align: left;
   caret-color: #fff;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .animated-border-textarea::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   background: transparent;
 }
 
 .animated-border-textarea::-webkit-scrollbar-thumb {
-  background: white;
+  background: rgba(255, 255, 255, 0.3);
   border-radius: 6px;
-  min-height: 24px;
-  border: 2px solid #141415;
+  min-height: 40px;
+  transition: background 0.2s ease;
+}
+
+.animated-border-textarea::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.4);
 }
 
 .animated-border-textarea::-webkit-scrollbar-track {
@@ -100,6 +104,7 @@
   border-radius: 0.75rem;
   padding: 1px;
   background: linear-gradient(90deg, #042f2e, #1e988a, #042f2e);
+  background-size: 200% 100%;
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
@@ -107,25 +112,67 @@
   pointer-events: none;
   opacity: 0;
   z-index: 1;
-  filter: drop-shadow(0 0 10px rgba(30, 152, 138, 0.3));
-  transform-origin: right center;
+  filter: drop-shadow(0 0 10px rgba(30, 152, 138, 0.2));
   transform: scaleX(0);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .animated-border-textarea-container.focused::before {
   opacity: 1;
-  transform-origin: right center;
   transform: scaleX(1);
-  transition: transform 0.3s ease-out;
+  transition: transform 0.3s ease-out, opacity 0.3s ease-out;
   animation: gradientBorder 3s linear infinite;
 }
 
 .animated-border-textarea-container.animating-out::before {
-  opacity: 1;
-  transform-origin: left center;
+  opacity: 0;
   transform: scaleX(0);
-  transition: transform 0.5s ease-in-out;
+  transition: transform 0.3s ease-out, opacity 0.3s ease-out;
   animation: gradientBorder 3s linear infinite;
+}
+
+@keyframes slideOutLeft {
+  0% {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+  100% {
+    clip-path: inset(0 100% 0 0);
+    opacity: 0;
+  }
+}
+
+@keyframes slideOutRight {
+  0% {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+  100% {
+    clip-path: inset(0 0 0 100%);
+    opacity: 0;
+  }
+}
+
+@keyframes slideOutTop {
+  0% {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+  100% {
+    clip-path: inset(100% 0 0 0);
+    opacity: 0;
+  }
+}
+
+@keyframes slideOutBottom {
+  0% {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+  100% {
+    clip-path: inset(0 0 100% 0);
+    opacity: 0;
+  }
 }
 
 @keyframes gradientBorder {

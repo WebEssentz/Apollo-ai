@@ -1,29 +1,27 @@
 import { GoogleGenAI } from "@google/genai"
 
 // Validate input meets requirements
-function validateInput(input: string): { valid: boolean; message?: string } {
-  // Check character count (not word count)
-  const charCount = input.length
-
+function validateInput(input: string | undefined | null): { valid: boolean; message?: string } {
+  if (typeof input !== "string" || !input) {
+    return { valid: false, message: "Prompt is required and must be a string." }
+  }
+  const charCount = input.length;
   if (charCount < 100) {
     return { valid: false, message: "Input must be at least 100 characters." }
   }
-
   if (charCount > 1000) {
     return { valid: false, message: "Input is too long. Please limit to 1000 characters or less." }
   }
-
   return { valid: true }
 }
 
 export async function POST(request: Request) {
   try {
-    const { prompt } = await request.json()
-
-    // Validate the input
-    const validation = validateInput(prompt)
+    const { prompt } = await request.json();
+    // Defensive: check for undefined/null/empty prompt
+    const validation = validateInput(prompt);
     if (!validation.valid) {
-      return Response.json({ error: validation.message }, { status: 400 })
+      return Response.json({ error: validation.message }, { status: 400 });
     }
 
     // Initialize Gemini with explicit API key

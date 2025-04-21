@@ -9,6 +9,7 @@ interface EnhancedButtonProps {
   hasContent: boolean;
   onEnhancingStateChange?: (isEnhancing: boolean) => void;
   onShowAuthModal: () => void;
+  onShimmerChange?: (shimmer: boolean) => void; // NEW PROP
 }
 
 export default function EnhancedButton({
@@ -16,6 +17,7 @@ export default function EnhancedButton({
   hasContent,
   onEnhancingStateChange,
   onShowAuthModal,
+  onShimmerChange,
 }: EnhancedButtonProps) {
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -45,17 +47,14 @@ export default function EnhancedButton({
       return () => textarea.removeEventListener("input", checkCharLimit);
     }
   }, [textareaRef, enhancedText]);
-  // Enhance shimmer flash: only add a class to textarea, no overlay/duplicate text!
-  const flashShimmer = (el: HTMLTextAreaElement | HTMLDivElement) => {
-    if (el && 'classList' in el) {
-      el.classList.add("shimmer-flash");
-      setTimeout(() => el.classList.remove("shimmer-flash"), 1100);
-    }
-  };
 
   // --- Typewriter effect and AI stream logic from previous code ---
   // Silver typewriter effect - improved for smoother animation and scrolling
-  const silverTypewriterEffect = (text: string, element: HTMLTextAreaElement) => {
+  const silverTypewriterEffect = (text: string, element: HTMLTextAreaElement | HTMLDivElement) => {
+    // Defensive: don't call API with empty prompt
+    if (!text || typeof text !== "string" || text.trim().length === 0) {
+      return;
+    }
     // Get enhanced text from API with validation
     const enhancePromptAsync = async (prompt: string) => {
       try {
@@ -95,6 +94,7 @@ export default function EnhancedButton({
 
     function startStreaming() {
       isStreaming = true;
+      if (onShimmerChange) onShimmerChange(true); // START shimmer
       streamNextChar();
     }
 
@@ -106,16 +106,24 @@ export default function EnhancedButton({
         if (isNewline) {
           lastNewlineIndex = charIndex;
         }
-        // Update the actual textarea value
-        element.value = typedText;
+        // Update the actual textarea or contenteditable div value
+        if ('value' in element) {
+          // textarea
+          (element as HTMLTextAreaElement).value = typedText;
+        } else {
+          // contenteditable div
+          (element as HTMLElement).textContent = typedText;
+        }
         // Trigger input event to resize textarea and maintain proper sizing
         const event = new Event("input", { bubbles: true });
         element.dispatchEvent(event);
         // Smooth auto-scroll to bottom
-        element.scrollTo({
-          top: element.scrollHeight,
-          behavior: "smooth",
-        });
+        if ('scrollTo' in element && 'scrollHeight' in element) {
+          element.scrollTo({
+            top: (element as any).scrollHeight,
+            behavior: "smooth",
+          });
+        }
         charIndex++;
         const randomVariation = Math.random() * 5 - 2.5;
         const adjustedSpeed = streamSpeed + randomVariation;
@@ -123,12 +131,23 @@ export default function EnhancedButton({
         setTimeout(streamNextChar, delay);
       } else {
         setTimeout(() => {
-          element.value = enhancedText;
+          // Finalize value
+          if ('value' in element) {
+            (element as HTMLTextAreaElement).value = enhancedText;
+          } else {
+            (element as HTMLElement).textContent = enhancedText;
+          }
           const event = new Event("input", { bubbles: true });
           element.dispatchEvent(event);
-          element.scrollTop = element.scrollHeight;
+          if ('scrollTo' in element && 'scrollHeight' in element) {
+            element.scrollTo({
+              top: (element as any).scrollHeight,
+              behavior: "smooth",
+            });
+          }
           setIsEnhancing(false);
           setIsAlreadyEnhanced(true);
+          if (onShimmerChange) onShimmerChange(false); // END shimmer
         }, 300);
       }
     }
@@ -146,22 +165,36 @@ export default function EnhancedButton({
     if (!hasContent || isEnhancing || !meetsCharLimit || isAlreadyEnhanced) return;
     const textarea = textareaRef.current;
     if (!textarea) return;
+    const text = (textarea as any).value !== undefined
+      ? (textarea as any).value || ''
+      : textarea.textContent || '';
+    if (!text || typeof text !== "string" || text.trim().length === 0) return;
+    if (onShimmerChange) onShimmerChange(true);
     setIsEnhancing(true);
     setIsAnimating(true);
     if (buttonRef.current) {
       buttonRef.current.classList.add("enhance-button-sparkle");
     }
-    // Flash shimmer ONLY on the textarea (no overlays, no duplicate divs)
-    flashShimmer(textarea);
-    // --- Typewriter effect and AI stream logic ---
-    silverTypewriterEffect(textarea.value, textarea);
-    // End button animation after the enhancement is complete (handled in the typewriter effect)
-    textarea.classList.add("shimmer");
-    setTimeout(() => {
+    // shimmer is now controlled by onShimmerChange
+    silverTypewriterEffect(text, textarea);    // Cleanup animations and effects
+    const cleanup = () => {
       setIsAnimating(false);
-      if (buttonRef.current) buttonRef.current.classList.remove("enhance-button-sparkle");
-      textarea.classList.remove("shimmer");
-    }, 4000);
+      if (buttonRef.current) {
+        buttonRef.current.classList.remove("enhance-button-sparkle");
+      }
+      if (onShimmerChange) {
+        onShimmerChange(false);
+      }
+    };
+
+    // Set timeout for animation cleanup
+    const timeoutId = setTimeout(cleanup, 4000);
+
+    // Cleanup on component unmount or error
+    return () => {
+      clearTimeout(timeoutId);
+      cleanup();
+    };
   };
 
   // Tooltip logic (unchanged)
